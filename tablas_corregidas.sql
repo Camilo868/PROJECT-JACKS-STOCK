@@ -84,3 +84,9 @@ CREATE TABLE movements(
     quantity INTEGER,
     movement_date DATE DEFAULT CURRENT_DATE
 );
+
+ALTER TABLE public.warehouses
+add column user_id integer;
+
+ALTER TABLE public.warehouses
+add constraint warehouse_user_id FOREIGN KEY (user_id) REFERENCES public.users(id);
