@@ -1,4 +1,4 @@
-# StockWise — Frontend
+# JACKS-STOCK — Frontend
 
 Frontend del Proyecto Integrador **CodeUp RIWI: Beyond Limits**.
 Sistema de gestión de inventario para pymes que calcula automáticamente
