@@ -146,3 +146,110 @@ INSERT INTO movements (product_id, warehouse_id, movement_type, quantity, moveme
 (1, 1, 'OUT', 5, '2026-07-18'),  -- Salida de 5 Laptops
 (2, 1, 'OUT', 20, '2026-07-19'); -- Salida de 20 hojas Bond
 select * from movements
+
+
+--Consultas 
+
+-- 1. Mostrar todos los usuarios registrados.
+SELECT * FROM users;
+
+-- 2. Mostrar todas las categorías de productos.
+SELECT * FROM categories;
+
+-- 3. Mostrar todos los proveedores.
+SELECT * FROM suppliers;
+
+-- 4. Mostrar todas las bodegas con el usuario responsable.
+SELECT w.id, w.name AS warehouse, w.location, w.capacity, u.name AS user_name, u.last_name
+FROM warehouses w
+JOIN users u ON w.user_id = u.id;
+
+-- 5. Mostrar todos los productos con su categoría y proveedor.
+SELECT p.id, p.name AS product, c.name AS category, s.company_name AS supplier, p.unit_price
+FROM products p
+JOIN categories c ON p.category_id = c.id
+JOIN suppliers s ON p.supplier_id = s.id;
+
+-- 6. Consultar el inventario actual de cada producto por bodega.
+SELECT w.name AS warehouse, p.name AS product, i.quantity
+FROM inventory i
+JOIN warehouses w ON i.warehouse_id = w.id
+JOIN products p ON i.product_id = p.id;
+
+-- 7. Mostrar únicamente los productos cuyo inventario es menor a 100 unidades.
+SELECT p.name AS product, i.quantity
+FROM inventory i
+JOIN products p ON i.product_id = p.id
+WHERE i.quantity < 100;
+
+-- 8. Calcular el valor total del inventario.
+SELECT SUM(i.quantity * p.unit_price) AS total_inventory_value
+FROM inventory i
+JOIN products p ON i.product_id = p.id;
+
+-- 9. Mostrar el historial completo de movimientos.
+SELECT p.name AS product, w.name AS warehouse, m.movement_type, m.quantity, m.movement_date
+FROM movements m
+JOIN products p ON m.product_id = p.id
+JOIN warehouses w ON m.warehouse_id = w.id
+ORDER BY m.movement_date;
+
+-- 10. Mostrar únicamente las entradas de productos.
+SELECT p.name AS product, m.quantity, m.movement_date
+FROM movements m
+JOIN products p ON m.product_id = p.id
+WHERE m.movement_type = 'IN';
+
+-- 11. Mostrar únicamente las salidas de productos.
+SELECT p.name AS product, m.quantity, m.movement_date
+FROM movements m
+JOIN products p ON m.product_id = p.id
+WHERE m.movement_type = 'OUT';
+
+-- 12. Contar cuántos productos existen en cada categoría.
+SELECT c.name AS category, COUNT(p.id) AS total_products
+FROM categories c
+LEFT JOIN products p ON c.id = p.category_id
+GROUP BY c.name;
+
+-- 13. Mostrar todas las compras realizadas con su proveedor.
+SELECT pu.id, s.company_name, pu.purchase_date, pu.total
+FROM purchases pu
+JOIN suppliers s ON pu.supplier_id = s.id;
+
+-- 14. Mostrar el detalle de cada compra.
+SELECT pd.purchase_id, p.name AS product, pd.quantity, pd.unit_price
+FROM purchase_details pd
+JOIN products p ON pd.product_id = p.id;
+
+-- 15. Mostrar el producto más costoso.
+SELECT name, unit_price
+FROM products
+ORDER BY unit_price DESC
+LIMIT 1;
+
+-- 16. Mostrar el producto más económico.
+SELECT name, unit_price
+FROM products
+ORDER BY unit_price ASC
+LIMIT 1;
+
+-- 17. Calcular el precio promedio de los productos.
+SELECT AVG(unit_price) AS average_price
+FROM products;
+
+-- 18. Contar el número de proveedores registrados.
+SELECT COUNT(*) AS total_suppliers
+FROM suppliers;
+
+-- 19. Mostrar la cantidad total de unidades almacenadas por producto.
+SELECT p.name AS product, SUM(i.quantity) AS total_quantity
+FROM inventory i
+JOIN products p ON i.product_id = p.id
+GROUP BY p.name;
+
+-- 20. Mostrar la cantidad de movimientos registrados por tipo.
+SELECT movement_type, COUNT(*) AS total_movements
+FROM movements
+GROUP BY movement_type;
+
