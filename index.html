@@ -1,119 +1,27 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JACKS-STOCK</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RIWI Suite | Sistema de Gestión</title>
 
-  <!-- Bootstrap CSS (reemplaza a Tailwind, ya no usamos ese CDN) -->
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <link rel="stylesheet" href="./src/css/styles.css">
-  <link rel="icon" type="image/png" href="./src/assets/jack.png">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <!-- App styles -->
+  <link rel="stylesheet" href="src/assets/css/main.css">
 </head>
+<body>
 
-<body class="bg-light text-dark">
+  <div id="app"></div>
 
-  <!-- ============================================================
-       ESTRUCTURA GENERAL: sidebar (menú lateral) + columna derecha
-       (header + contenido). Esto es el "shell" fijo: NUNCA se
-       recarga cuando cambias de sección, solo cambia lo de adentro
-       de <main id="app">.
-       ============================================================ -->
-  <div class="d-flex vh-100 overflow-hidden">
+  <!-- Toast container global -->
+  <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
 
-    <!-- ========== SIDEBAR (menú lateral izquierdo) ========== -->
-    <!-- "d-none d-md-flex": en pantallas chicas se oculta, en
-         medianas/grandes se muestra como columna (flex-column) -->
-    <aside class="d-none d-md-flex flex-column bg-white border-end flex-shrink-0" style="width: 260px;">
-
-      <!-- Logo + nombre del proyecto -->
-      <div class="d-flex align-items-center gap-3 px-4 border-bottom" style="height: 80px;">
-        <img src="./src/assets/logo-emblem.png" alt="Jacks-Stock" class="rounded-3"
-          style="width:40px; height:40px; object-fit:contain;">
-        <div>
-          <p class="fw-bold fs-5 mb-0 lh-sm">JACKS-STOCK</p>
-          <p class="text-secondary mb-0 lh-sm text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">Gestión
-            de Inventarios</p>
-        </div>
-      </div>
-
-      <!-- Este <nav> queda vacío a propósito: router.js le mete
-           los links de cada sección automáticamente (ver buildSidebar
-           en router.js). No agregues links aquí a mano. -->
-      <nav id="sidebar-nav" class="flex-grow-1 px-2 py-4">
-        <p class="px-3 pb-2 text-secondary text-uppercase fw-semibold" style="font-size: 11px; letter-spacing: 0.05em;">
-          Operación</p>
-      </nav>
-
-      <!-- Usuario logueado (fijo abajo del sidebar, dato de ejemplo) -->
-      <div class="p-3 border-top d-flex align-items-center gap-2">
-        <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-semibold"
-          style="width:36px; height:36px; font-size: 12px;">
-          MR
-        </div>
-        <div class="lh-sm">
-          <p class="mb-0 fw-medium" style="font-size: 14px;">Mariana Ríos</p>
-          <p class="mb-0 text-secondary" style="font-size: 12px;">Almacén Central</p>
-        </div>
-      </div>
-    </aside>
-
-    <!-- ========== COLUMNA DERECHA: header + contenido ========== -->
-    <div class="flex-grow-1 d-flex flex-column overflow-auto">
-
-      <!-- ========== HEADER (barra de arriba, fija) ========== -->
-      <header
-        class="bg-white border-bottom d-flex align-items-center justify-content-between px-4 px-md-5 gap-3 flex-shrink-0"
-        style="height: 80px;">
-
-        <!-- Buscador -->
-        <div class="position-relative flex-grow-1" style="max-width: 420px;">
-          <svg class="position-absolute text-secondary" style="left: 14px; top: 10px; width:16px; height:16px;"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
-          </svg>
-          <input type="text" placeholder="Buscar SKU, producto o categoría..." class="form-control rounded-3 ps-5">
-        </div>
-
-        <!-- Notificaciones + usuario -->
-        <div class="d-flex align-items-center gap-3">
-          <button id="btn-notificaciones" class="btn btn-light rounded-circle position-relative"
-            style="width:36px; height:36px;">
-            <svg style="width:16px; height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0" />
-            </svg>
-            <span class="position-absolute top-0 end-0 bg-warning rounded-circle" style="width:8px; height:8px;"></span>
-          </button>
-          <div class="text-end d-none d-sm-block lh-sm">
-            <p class="mb-0 fw-medium" style="font-size: 14px;">Mariana Ríos</p>
-            <p class="mb-0 text-secondary" style="font-size: 12px;">Administradora</p>
-          </div>
-          <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-semibold"
-            style="width:36px; height:36px; font-size:12px;">
-            MR
-          </div>
-        </div>
-      </header>
-
-      <!-- ============================================================
-           AQUÍ ES DONDE CADA VISTA (dashboard.js, productos.js, etc.)
-           INYECTA SU HTML. router.js hace:
-             appEl.innerHTML = route.render();
-           Todo lo que ves en pantalla al cambiar de sección sale de
-           adentro de este <main>, nunca se toca a mano.
-           ============================================================ -->
-      <main id="app" class="p-4 p-md-5">
-        <!-- contenido dinámico -->
-      </main>
-    </div>
-  </div>
-
-  <script type="module" src="./src/js/main.js"></script>
+  <!-- Bootstrap Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- App entry -->
+  <script type="module" src="src/js/main.js"></script>
 </body>
-
-
 </html>

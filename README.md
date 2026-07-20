@@ -1,62 +1,127 @@
-# Frontend — Proyecto Integrador
+# StockWise — Frontend
 
-SPA en JavaScript Vanilla (sin frameworks), con Tailwind CSS vía CDN.
+Frontend del Proyecto Integrador **CodeUp RIWI: Beyond Limits**.
+Sistema de gestión de inventario para pymes que calcula automáticamente
+**EOQ** (cantidad económica de pedido), **clasificación ABC** y
+**punto de reorden (ROP)** con semáforo de criticidad.
 
-## Estructura
+Este repositorio contiene **únicamente el Frontend**. El Backend
+(Express.js) es responsabilidad de otro integrante del equipo y se
+integrará consumiendo la misma capa de servicios (`src/js/services`).
 
+## Stack
+
+- HTML5 + CSS3
+- Bootstrap 5 + Bootstrap Icons
+- JavaScript Vanilla (ES Modules) — sin frameworks
+- SPA con router basado en hash (`#/ruta`)
+
+## Cómo ejecutar
+
+No requiere build ni instalación de dependencias. Debe servirse como
+sitio estático (los ES Modules no funcionan con `file://`):
+
+```bash
+# Con Python
+python3 -m http.server 5500
+
+# O con la extensión "Live Server" de VS Code
 ```
-frontend/
-├── index.html              # shell fijo: sidebar + header + <main id="app">
-├── src/
-│   ├── css/
-│   │   └── styles.css
-│   └── js/
-│       ├── main.js         # arranque de la app
-│       ├── router.js       # hash router: define rutas e inyecta HTML en #app
-│       ├── api.js          # funciones fetch() al backend
-│       └── views/
-│           ├── dashboard.js
-│           └── productos.js
-```
 
-## Cómo funciona la SPA
+Luego abre `http://localhost:5500`.
 
-1. `index.html` nunca se recarga: solo tiene un `<main id="app">` vacío.
-2. `router.js` escucha cambios en el `#hash` de la URL (ej. `#productos`).
-3. Según el hash, llama a la función `render...()` de la vista correspondiente,
-   que devuelve un **string de HTML**.
-4. Ese string se inyecta con `appEl.innerHTML = ...` dentro de `#app`.
+## Modo mock (sin backend)
 
-## Cómo agregar una vista nueva
+Por defecto, `src/js/services/api.js` tiene `MOCK_MODE: true`: todas las
+peticiones se resuelven contra `localStorage`, simulando una API REST,
+con datos de ejemplo precargados (usuario, proveedores, bodegas,
+productos y movimientos).
 
-1. Crea `src/js/views/miVista.js` con una función `renderMiVista()` que
-   devuelva el HTML como string (copia el patrón de `dashboard.js`).
-2. Impórtala en `router.js` y agrégala al objeto `ROUTES`:
+**Cuenta demo:** `admin@stockwise.com` / `admin123`
+
+## Conectar el backend Express real
+
+En `src/js/services/api.js`:
 
 ```js
-import { renderMiVista } from './views/miVista.js';
-
-const ROUTES = {
-  ...
-  mivista: { title: 'Mi Vista', render: renderMiVista },
+export const API_CONFIG = {
+  BASE_URL: 'http://localhost:3000/api', // ajustar a la URL del backend
+  MOCK_MODE: false,                      // desactivar el modo mock
 };
 ```
 
-El link del sidebar se genera solo, no hay que tocar el HTML a mano.
+Ningún servicio ni página necesita cambios: todos consumen `api.js`,
+que ya envía el token de sesión (`Authorization: Bearer`) y maneja
+errores 401 redirigiendo a `/login`.
 
-## Instalación y ejecución local
+El backend Express debe exponer estos endpoints:
 
-No requiere `npm install` todavía (Tailwind está vía CDN).
+| Recurso     | Endpoints                                                        |
+|-------------|-------------------------------------------------------------------|
+| Auth        | `POST /auth/login`, `POST /auth/register`                        |
+| Productos   | `GET/POST /products`, `GET/PUT/DELETE /products/:id`             |
+| Proveedores | `GET/POST /suppliers`, `GET/PUT/DELETE /suppliers/:id`           |
+| Bodegas     | `GET/POST /warehouses`, `GET/PUT/DELETE /warehouses/:id`         |
+| Movimientos | `GET /movements?productId=`, `POST /movements`                   |
+| Compras     | `GET/POST /purchases`, `GET/PUT/DELETE /purchases/:id`           |
 
-```bash
-npx serve .
+## Estructura del proyecto
+
+```
+src/
+  assets/
+    css/main.css        # Design tokens y estilos del sistema
+    img/
+  js/
+    core/
+      router.js          # Router hash con rutas privadas y 404
+      session.js          # Persistencia de sesión (localStorage)
+      mock-db.js           # Backend simulado (solo modo MOCK)
+    components/
+      layout.js            # Shell: sidebar + navbar + contenido
+      sidebar.js
+      navbar.js
+      form-modal.js         # Modal de formulario reutilizable (CRUD)
+      confirm-dialog.js       # Modal de confirmación
+      toast.js                # Notificaciones
+      badges.js                # Badges ABC / semáforo
+    services/
+      api.js                    # Cliente HTTP central (mock/real)
+      auth.service.js
+      product.service.js
+      supplier.service.js
+      warehouse.service.js
+      movement.service.js
+      purchase.service.js
+      settings.service.js
+    utils/
+      inventory-calc.js          # Lógica de negocio: EOQ, ROP, ABC
+      validators.js
+      format.js
+    pages/
+      login.page.js / register.page.js
+      dashboard.page.js
+      products.page.js / suppliers.page.js / warehouses.page.js
+      movements.page.js / semaphore.page.js / purchases.page.js
+      reports.page.js / settings.page.js
+      notfound.page.js
+    main.js                      # Registro de rutas y arranque
+index.html
 ```
 
-o con la extensión **Live Server** de VS Code: clic derecho sobre
-`index.html` → "Open with Live Server".
+## Lógica de negocio implementada
 
-## Pendiente
+- **EOQ** = √(2·D·S / H) — `utils/inventory-calc.js`
+- **ROP** = demanda diaria × lead time del proveedor + stock de seguridad
+- **Clasificación ABC** por regla de Pareto sobre el valor de consumo anual
+  (A = 80% del valor, B = siguiente 15%, C = 5% restante)
+- **Semáforo de criticidad**: rojo (comprar ya), amarillo (vigilar), verde
+  (saludable), según stock actual frente al ROP
+- Registrar una **entrada/salida** actualiza el stock del producto
+- Marcar una **orden de compra como recibida** genera automáticamente los
+  movimientos de entrada correspondientes
 
-- Conectar `api.js` con el backend real.
-- Reemplazar el contenido de ejemplo en `views/` por los datos y componentes reales.
-- Definir el enfoque final del inventario (aún por confirmar con el equipo).
+## Roadmap (fuera de alcance del MVP)
+
+- Exportar reportes a PDF/Excel (v2)
+- Sugerencia automática de orden de compra (v2)
