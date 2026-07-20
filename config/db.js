@@ -5,8 +5,15 @@ export const pool = new pg.Pool({
     host:process.env.DB_HOST,
     password:process.env.DB_PASSWORD,
     database:process.env.DB_DATABASE,
-    port:process.env.DB_PORT
+    port: Number(process.env.DB_PORT),
+    
+    ssl: {
+        rejectUnauthorized: false
+    }
 })
+pool.query("SELECT NOW()")
+    .then(() => console.log("✅ Conectado a Supabase"))
+    .catch(err => console.error(err));
 
 // export const pool_2 = new pg.Pool({
 //     user: DB_USER,
