@@ -1,0 +1,39 @@
+/**
+ * layout.js
+ * Reusable layout for the admin panel's private pages: mounts the
+ * sidebar + navbar + content container.
+ */
+import { renderSidebar } from './sidebar.js';
+import { renderNavbar } from './navbar.js';
+import { logout } from '../services/auth.service.js';
+import { navigateTo } from '../core/router.js';
+
+/**
+ * Renders the app shell inside `container` and returns the node
+ * where the page should insert its content.
+ * @param {HTMLElement} container
+ * @param {{ title: string, activePath: string }} options
+ * @returns {HTMLElement} contentEl
+ */
+export function renderLayout(container, { title, activePath }) {
+  container.innerHTML = `
+    <div class="sw-shell">
+      ${renderSidebar(activePath)}
+      <div class="sw-main">
+        ${renderNavbar(title)}
+        <main class="sw-content" id="sw-content"></main>
+      </div>
+    </div>
+    <div class="sw-sidebar-backdrop"></div>`;
+
+  const sidebar = container.querySelector('#sw-sidebar');
+  const toggleBtn = container.querySelector('#sw-sidebar-toggle');
+  toggleBtn?.addEventListener('click', () => sidebar.classList.toggle('show'));
+
+  container.querySelector('#sw-logout-btn')?.addEventListener('click', () => {
+    logout();
+    navigateTo('/login');
+  });
+
+  return container.querySelector('#sw-content');
+}
