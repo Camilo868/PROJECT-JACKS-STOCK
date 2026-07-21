@@ -31,7 +31,7 @@ function paint(content) {
     <div class="sw-page-header">
       <div>
         <div class="sw-page-title">Proveedores</div>
-        <div class="sw-page-subtitle">Contactos y tiempos de entrega (lead time) usados en el cálculo del ROP.</div>
+        <div class="sw-page-subtitle">Datos de contacto de tus proveedores. El lead time (tiempo de entrega) se configura por producto, en la pantalla de Productos.</div>
       </div>
       <button class="btn sw-btn-accent" id="btn-new-supplier"><i class="bi bi-plus-lg me-1"></i>Nuevo proveedor</button>
     </div>
@@ -49,7 +49,7 @@ function paint(content) {
         <div class="sw-empty-state"><i class="bi bi-truck"></i><div>No se encontraron proveedores.</div></div>` : `
       <div class="table-responsive">
         <table class="table sw-table align-middle mb-0">
-          <thead><tr><th>Proveedor</th><th>Contacto</th><th>Correo</th><th>Teléfono</th><th>Lead time</th><th class="text-end">Acciones</th></tr></thead>
+          <thead><tr><th>Proveedor</th><th>Contacto</th><th>Correo</th><th>Teléfono</th><th class="text-end">Acciones</th></tr></thead>
           <tbody>
             ${list.map((s) => `
               <tr>
@@ -57,7 +57,6 @@ function paint(content) {
                 <td>${escapeHtml(s.contact)}</td>
                 <td>${escapeHtml(s.email)}</td>
                 <td>${escapeHtml(s.phone)}</td>
-                <td>${s.leadTimeDays} días</td>
                 <td class="text-end">
                   <button class="btn btn-sm btn-light" data-action="edit" data-id="${s.id}"><i class="bi bi-pencil-square"></i></button>
                   <button class="btn btn-sm btn-light text-danger" data-action="delete" data-id="${s.id}"><i class="bi bi-trash3"></i></button>
@@ -103,7 +102,6 @@ function openSupplierModal(content, supplier) {
       { name: 'contact', label: 'Persona de contacto', required: true, colClass: 'col-6' },
       { name: 'phone', label: 'Teléfono', required: true, colClass: 'col-6' },
       { name: 'email', label: 'Correo electrónico', type: 'email', required: true, colClass: 'col-8' },
-      { name: 'leadTimeDays', label: 'Lead time (días)', type: 'number', min: 1, step: '1', required: true, colClass: 'col-4' },
     ],
     onSubmit: async (values) => {
       const { valid, errors } = validateForm(values, {
@@ -111,7 +109,6 @@ function openSupplierModal(content, supplier) {
         contact: [validators.required],
         phone: [validators.required],
         email: [validators.required, validators.email],
-        leadTimeDays: [validators.required, validators.positiveNumber],
       });
       if (!valid) throw new Error(Object.values(errors)[0]);
 
@@ -120,7 +117,6 @@ function openSupplierModal(content, supplier) {
         contact: values.contact.trim(),
         phone: values.phone.trim(),
         email: values.email.trim(),
-        leadTimeDays: Number(values.leadTimeDays),
       };
 
       if (isEdit) {

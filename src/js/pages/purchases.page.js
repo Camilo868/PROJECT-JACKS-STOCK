@@ -122,11 +122,19 @@ async function receiveOrder(content, id) {
   if (!ok) return;
   try {
     for (const item of order.items) {
+      const product = products.find((p) => p.id === item.productId);
+      // Se usa la primera bodega registrada del producto. Si el
+      // producto no tiene ninguna bodega asignada todavía, no se puede
+      // saber dónde entra el stock — se avisa en vez de adivinar.
+      const warehouseId = product?.stockByWarehouse?.[0]?.warehouseId;
+      if (!warehouseId) {
+        throw new Error(`"${product?.name || 'Producto'}" no tiene una bodega asignada. Edítalo primero en Productos.`);
+      }
       await MovementService.create({
         productId: item.productId,
+        warehouseId,
         type: 'entrada',
         quantity: item.quantity,
-        note: `Recepción orden de compra #${order.id}`,
       });
     }
     await PurchaseService.updateStatus(order.id, 'recibida');

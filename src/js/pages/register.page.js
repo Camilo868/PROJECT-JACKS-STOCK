@@ -18,7 +18,7 @@ export async function renderRegisterPage(container) {
       <aside class="sw-auth-aside d-none d-lg-flex">
         <div class="sw-brand text-white">
           <div class="sw-brand-mark"><i class="bi bi-boxes"></i></div>
-         JACKS STOCK
+         JACKS STOCKS
         </div>
         <div>
           <h2 class="fw-bold mb-3" style="max-width:420px;">Crea tu cuenta de encargado de bodega.</h2>
@@ -34,16 +34,23 @@ export async function renderRegisterPage(container) {
         <div class="sw-auth-card">
           <div class="sw-brand d-lg-none mb-4">
             <div class="sw-brand-mark"><i class="bi bi-boxes"></i></div>
-            JACKS STOCK
+            JACKS STOCKS
           </div>
           <h3 class="fw-bold mb-1">Crea tu cuenta</h3>
           <p class="text-secondary mb-4">Empieza a gestionar tu inventario en minutos.</p>
 
           <form id="register-form" novalidate>
-            <div class="mb-3">
-              <label class="form-label" for="name">Nombre completo</label>
-              <input type="text" class="form-control form-control-lg" id="name" name="name" placeholder="Nombre y apellido" required>
-              <div class="invalid-feedback"></div>
+            <div class="row g-2">
+              <div class="col-6 mb-3">
+                <label class="form-label" for="name">Nombre</label>
+                <input type="text" class="form-control form-control-lg" id="name" name="name" placeholder="Nombre" required>
+                <div class="invalid-feedback"></div>
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label" for="lastName">Apellido</label>
+                <input type="text" class="form-control form-control-lg" id="lastName" name="lastName" placeholder="Apellido" required>
+                <div class="invalid-feedback"></div>
+              </div>
             </div>
             <div class="mb-3">
               <label class="form-label" for="email">Correo electrónico</label>
@@ -86,6 +93,7 @@ export async function renderRegisterPage(container) {
     const data = Object.fromEntries(new FormData(form).entries());
     const { valid, errors } = validateForm(data, {
       name: [validators.required],
+      lastName: [validators.required],
       email: [validators.required, validators.email],
       password: [validators.required, validators.minLength(6)],
       confirmPassword: [validators.required, validators.match(data.password, 'Las contraseñas no coinciden.')],
@@ -104,7 +112,7 @@ export async function renderRegisterPage(container) {
     spinner.classList.remove('d-none');
 
     try {
-      await register(data.name, data.email, data.password);
+      await register(data.name, data.lastName, data.email, data.password);
       navigateTo('/dashboard');
     } catch (error) {
       errorBox.textContent = error.message || 'No se pudo crear la cuenta.';

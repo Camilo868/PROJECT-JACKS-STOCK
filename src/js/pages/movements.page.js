@@ -4,6 +4,7 @@
  */
 import { renderLayout } from '../components/layout.js';
 import { ProductService } from '../services/product.service.js';
+import { WarehouseService } from '../services/warehouse.service.js';
 import { MovementService } from '../services/movement.service.js';
 import { openFormModal } from '../components/form-modal.js';
 import { showSuccess, showError } from '../components/toast.js';
@@ -11,6 +12,7 @@ import { validateForm, validators } from '../utils/validators.js';
 import { formatDateTime, escapeHtml } from '../utils/format.js';
 
 let products = [];
+let warehouses = [];
 let movements = [];
 let filterProductId = '';
 
@@ -22,7 +24,9 @@ export async function renderMovementsPage(container) {
 }
 
 async function loadData() {
-  [products, movements] = await Promise.all([ProductService.getAll(), MovementService.getAll()]);
+  [products, warehouses, movements] = await Promise.all([
+    ProductService.getAll(), WarehouseService.getAll(), MovementService.getAll(),
+  ]);
 }
 
 function getProduct(id) {
@@ -89,7 +93,8 @@ function paint(content) {
 }
 
 function openMovementModal(content) {
-  const productOptions = products.map((p) => ({ value: p.id, label: `${p.name} (stock: ${p.currentStock})` }));
+  const productOptions = products.map((p) => ({ value: p.id, label: `${p.name} (stock total: ${p.currentStock})` }));
+  const warehouseOptions = warehouses.map((w) => ({ value: w.id, label: w.name }));
 
   openFormModal({
     title: 'Registrar movimiento',
@@ -97,17 +102,23 @@ function openMovementModal(content) {
     initialValues: { type: 'entrada' },
     fields: [
       { name: 'productId', label: 'Producto', type: 'select', required: true, options: productOptions },
+      // La bodega es obligatoria: la BD guarda el stock por bodega, no
+      // un total único por producto.
+      { name: 'warehouseId', label: 'Bodega', type: 'select', required: true, options: warehouseOptions },
       {
         name: 'type', label: 'Tipo de movimiento', type: 'select', required: true,
         options: [{ value: 'entrada', label: 'Entrada' }, { value: 'salida', label: 'Salida' }],
         colClass: 'col-6',
       },
       { name: 'quantity', label: 'Cantidad', type: 'number', min: 1, step: '1', required: true, colClass: 'col-6' },
-      { name: 'note', label: 'Nota (opcional)', type: 'textarea' },
+      // Nota: por ahora este campo no se guarda en el backend (la tabla
+      // `movements` no tiene columna para esto todavía).
+      { name: 'note', label: 'Nota (opcional, no se guarda aún)', type: 'textarea' },
     ],
     onSubmit: async (values) => {
       const { valid, errors } = validateForm(values, {
         productId: [validators.required],
+        warehouseId: [validators.required],
         type: [validators.required],
         quantity: [validators.required, validators.positiveNumber],
       });
@@ -116,9 +127,9 @@ function openMovementModal(content) {
       try {
         await MovementService.create({
           productId: values.productId,
+          warehouseId: values.warehouseId,
           type: values.type,
           quantity: Number(values.quantity),
-          note: values.note?.trim() || '',
         });
       } catch (error) {
         throw new Error(error.message);

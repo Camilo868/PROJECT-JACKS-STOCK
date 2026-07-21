@@ -1,10 +1,8 @@
 /**
  * main.js
- * Punto de entrada de la SPA: siembra datos mock, registra rutas y
- * arranca el router.
+ * Punto de entrada de la SPA: registra rutas y arranca el router.
  */
 import { addRoute, setNotFound, initRouter, navigateTo } from './core/router.js';
-import { seedDatabase } from './core/mock-db.js';
 import { isAuthenticated } from './core/session.js';
 
 import { renderLoginPage } from './pages/login.page.js';
@@ -19,8 +17,6 @@ import { renderPurchasesPage } from './pages/purchases.page.js';
 import { renderReportsPage } from './pages/reports.page.js';
 import { renderSettingsPage } from './pages/settings.page.js';
 import { renderNotFoundPage } from './pages/notfound.page.js';
-
-seedDatabase();
 
 // Rutas públicas
 addRoute('/', async () => navigateTo(isAuthenticated() ? '/dashboard' : '/login'));

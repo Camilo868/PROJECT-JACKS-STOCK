@@ -19,7 +19,6 @@ export async function renderReportsPage(container) {
     ProductService.getAll(), SupplierService.getAll(), MovementService.getAll(),
   ]);
 
-  const supplierMap = new Map(suppliers.map((s) => [s.id, s]));
   const abcMap = classifyABC(products);
 
   const abcCounts = { A: 0, B: 0, C: 0 };
@@ -30,7 +29,8 @@ export async function renderReportsPage(container) {
     const entry = abcMap.get(p.id);
     abcCounts[entry.class] += 1;
     abcValue[entry.class] += entry.value;
-    const rop = calculateROP(p, supplierMap.get(p.supplierId)?.leadTimeDays || 0);
+    // El lead time vive en el producto (lead_time_days), no en el proveedor.
+    const rop = calculateROP(p, p.leadTimeDays || 0);
     semaphoreCounts[getSemaphoreStatus(p, rop)] += 1;
   });
 

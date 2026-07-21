@@ -51,7 +51,7 @@ export function renderSidebar(activePath) {
     <aside class="sw-sidebar" id="sw-sidebar">
       <div class="sw-sidebar-brand">
          <div class="sw-brand-mark"><img src="./src/assets/img/jack.png" alt="Jacks-Stock" style="width:52px; height:42px; object-fit:contain;"></div>
-        <span>JACKS STOCK</span>
+        <span>JACKS STOCKS</span>
       </div>
       <nav class="sw-sidebar-nav">${sections}</nav>
       <div class="sw-sidebar-footer">

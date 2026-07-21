@@ -6,6 +6,7 @@ import { renderLayout } from '../components/layout.js';
 import { ProductService } from '../services/product.service.js';
 import { SupplierService } from '../services/supplier.service.js';
 import { WarehouseService } from '../services/warehouse.service.js';
+import { CategoryService } from '../services/category.service.js';
 import { openFormModal } from '../components/form-modal.js';
 import { confirmDialog } from '../components/confirm-dialog.js';
 import { showSuccess, showError } from '../components/toast.js';
@@ -14,7 +15,7 @@ import { calculateEOQ, classifyABC } from '../utils/inventory-calc.js';
 import { renderAbcBadge } from '../components/badges.js';
 import { formatCurrency, escapeHtml } from '../utils/format.js';
 
-let state = { products: [], suppliers: [], warehouses: [], search: '' };
+let state = { products: [], suppliers: [], warehouses: [], categories: [], search: '' };
 
 export async function renderProductsPage(container) {
   const content = renderLayout(container, { title: 'Productos', activePath: '/productos' });
@@ -25,12 +26,13 @@ export async function renderProductsPage(container) {
 }
 
 async function loadData() {
-  const [products, suppliers, warehouses] = await Promise.all([
+  const [products, suppliers, warehouses, categories] = await Promise.all([
     ProductService.getAll(),
     SupplierService.getAll(),
     WarehouseService.getAll(),
+    CategoryService.getAll(),
   ]);
-  state = { ...state, products, suppliers, warehouses };
+  state = { ...state, products, suppliers, warehouses, categories };
 }
 
 function getSupplierName(id) {
@@ -136,30 +138,36 @@ function openProductModal(content, product) {
   const isEdit = Boolean(product);
   const supplierOptions = state.suppliers.map((s) => ({ value: s.id, label: s.name }));
   const warehouseOptions = state.warehouses.map((w) => ({ value: w.id, label: w.name }));
+  const categoryOptions = state.categories.map((c) => ({ value: c.id, label: c.name }));
+
+  // Bodega/stock inicial: si el producto ya tiene inventario registrado
+  // en alguna bodega, se preselecciona la primera para editarla.
+  const primaryStock = product?.stockByWarehouse?.[0];
 
   openFormModal({
     title: isEdit ? 'Editar producto' : 'Nuevo producto',
     submitLabel: isEdit ? 'Guardar cambios' : 'Crear producto',
-    initialValues: product || { holdingCostRate: 0.2, currentStock: 0, safetyStock: 0 },
+    initialValues: product
+      ? { ...product, warehouseId: primaryStock?.warehouseId, currentStock: primaryStock?.quantity ?? 0 }
+      : { holdingCostRate: 0.2, currentStock: 0, leadTimeDays: 5 },
     fields: [
-      { name: 'sku', label: 'SKU', required: true, colClass: 'col-6' },
       { name: 'name', label: 'Nombre del producto', required: true, colClass: 'col-6' },
-      { name: 'category', label: 'Categoría', required: true, colClass: 'col-6' },
+      { name: 'categoryId', label: 'Categoría', type: 'select', required: true, options: categoryOptions, colClass: 'col-6' },
       { name: 'supplierId', label: 'Proveedor', type: 'select', required: true, options: supplierOptions, colClass: 'col-6' },
-      { name: 'warehouseId', label: 'Bodega', type: 'select', required: true, options: warehouseOptions, colClass: 'col-6' },
+      { name: 'leadTimeDays', label: 'Lead time del proveedor (días)', type: 'number', min: 1, step: '1', required: true, colClass: 'col-6' },
       { name: 'unitCost', label: 'Costo unitario (COP)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
       { name: 'annualDemand', label: 'Demanda anual estimada (un.)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
       { name: 'orderingCost', label: 'Costo de ordenar un pedido (COP)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
       { name: 'holdingCostRate', label: 'Tasa de almacenamiento anual (0-1)', type: 'number', min: 0, step: '0.01', required: true, colClass: 'col-6' },
-      { name: 'safetyStock', label: 'Stock de seguridad (un.)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
-      { name: 'currentStock', label: 'Stock actual (un.)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
+      { name: 'warehouseId', label: 'Bodega (stock inicial/actual)', type: 'select', required: true, options: warehouseOptions, colClass: 'col-6' },
+      { name: 'currentStock', label: 'Stock en esa bodega (un.)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
     ],
     onSubmit: async (values) => {
       const { valid, errors } = validateForm(values, {
-        sku: [validators.required],
         name: [validators.required],
-        category: [validators.required],
+        categoryId: [validators.required],
         supplierId: [validators.required],
+        leadTimeDays: [validators.required, validators.positiveNumber],
         warehouseId: [validators.required],
         unitCost: [validators.required, validators.positiveNumber],
         annualDemand: [validators.required, validators.nonNegativeNumber],
@@ -169,17 +177,17 @@ function openProductModal(content, product) {
       if (!valid) throw new Error(Object.values(errors)[0]);
 
       const payload = {
-        sku: values.sku.trim(),
         name: values.name.trim(),
-        category: values.category.trim(),
+        categoryId: values.categoryId,
         supplierId: values.supplierId,
-        warehouseId: values.warehouseId,
+        leadTimeDays: Number(values.leadTimeDays),
         unitCost: Number(values.unitCost),
         annualDemand: Number(values.annualDemand),
         orderingCost: Number(values.orderingCost),
         holdingCostRate: Number(values.holdingCostRate),
-        safetyStock: Number(values.safetyStock),
+        warehouseId: values.warehouseId,
         currentStock: Number(values.currentStock),
+        stockByWarehouse: product?.stockByWarehouse || [],
       };
 
       if (isEdit) {

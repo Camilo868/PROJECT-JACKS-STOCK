@@ -29,7 +29,8 @@ export async function renderDashboardPage(container) {
 
   const enriched = products.map((p) => {
     const supplier = supplierMap.get(p.supplierId);
-    const rop = calculateROP(p, supplier?.leadTimeDays || 0);
+    // El lead time vive en el producto (lead_time_days), no en el proveedor.
+    const rop = calculateROP(p, p.leadTimeDays || 0);
     const status = getSemaphoreStatus(p, rop);
     const abc = abcMap.get(p.id);
     return { ...p, rop, status, abcClass: abc?.class || 'C' };

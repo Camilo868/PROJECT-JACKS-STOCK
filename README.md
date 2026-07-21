@@ -1,4 +1,4 @@
-# JACKS-STOCK — Frontend
+# JACKS STOCKS — Frontend
 
 Frontend del Proyecto Integrador **CodeUp RIWI: Beyond Limits**.
 Sistema de gestión de inventario para pymes que calcula automáticamente
@@ -30,40 +30,43 @@ python3 -m http.server 5500
 
 Luego abre `http://localhost:5500`.
 
-## Modo mock (sin backend)
+## Backend requerido
 
-Por defecto, `src/js/services/api.js` tiene `MOCK_MODE: true`: todas las
-peticiones se resuelven contra `localStorage`, simulando una API REST,
-con datos de ejemplo precargados (usuario, proveedores, bodegas,
-productos y movimientos).
+Esta app **necesita el backend Express corriendo** para funcionar — ya
+no tiene un modo de datos de prueba integrado. Antes de usarla:
 
-**Cuenta demo:** `admin@stockwise.com` / `admin123`
-
-## Conectar el backend Express real
-
-En `src/js/services/api.js`:
+1. Levanta el backend (`npm run dev` en `PROJECT-JACKS-STOCK-BACKEND`,
+   ver su propio README).
+2. Confirma que `src/js/services/api.js` apunte a la URL correcta:
 
 ```js
 export const API_CONFIG = {
-  BASE_URL: 'http://localhost:3000/api', // ajustar a la URL del backend
-  MOCK_MODE: false,                      // desactivar el modo mock
+  BASE_URL: 'http://localhost:6543', // ajustar a la URL real del backend
 };
 ```
 
-Ningún servicio ni página necesita cambios: todos consumen `api.js`,
-que ya envía el token de sesión (`Authorization: Bearer`) y maneja
+3. Crea una cuenta desde la pantalla de **Registro** — los usuarios de
+   ejemplo del script SQL tienen una contraseña de relleno (no un hash
+   real), así que no van a poder iniciar sesión.
+
+`api.js` envía el token de sesión (`Authorization: Bearer`), desenvuelve
+la respuesta `{ success, message, data }` del backend, y maneja
 errores 401 redirigiendo a `/login`.
 
-El backend Express debe exponer estos endpoints:
+El backend Express expone estos endpoints:
 
 | Recurso     | Endpoints                                                        |
 |-------------|-------------------------------------------------------------------|
-| Auth        | `POST /auth/login`, `POST /auth/register`                        |
+| Auth        | `POST /users/login`, `POST /users/register`                      |
+| Categorías  | `GET/POST /categories`, `GET/PUT/DELETE /categories/:id`         |
 | Productos   | `GET/POST /products`, `GET/PUT/DELETE /products/:id`             |
 | Proveedores | `GET/POST /suppliers`, `GET/PUT/DELETE /suppliers/:id`           |
-| Bodegas     | `GET/POST /warehouses`, `GET/PUT/DELETE /warehouses/:id`         |
-| Movimientos | `GET /movements?productId=`, `POST /movements`                   |
-| Compras     | `GET/POST /purchases`, `GET/PUT/DELETE /purchases/:id`           |
+| Bodegas     | `GET/POST /warehouses`, `GET/PUT/DELETE /warehouses/:id`, `GET /warehouses/capacity` |
+| Inventario  | `GET /inventory`, `GET /inventory/product/:product_id`, `POST/PUT/DELETE /inventory/:id` |
+| Movimientos | `GET /movements`, `GET /movements/product/:product_id`, `POST /movements` |
+| Compras     | `GET/POST /purchases`, `PATCH /purchases/:id/status`, `GET /purchases/supplier/:supplier_id` |
+| Detalle compra | `GET/POST /purchase-details`, `GET /purchase-details/purchase/:purchase_id` |
+| Reportes    | `GET /reports/eoq`, `GET /reports/movements-summary`, `GET /reports/stock-by-product` |
 
 ## Estructura del proyecto
 
@@ -76,7 +79,6 @@ src/
     core/
       router.js          # Router hash con rutas privadas y 404
       session.js          # Persistencia de sesión (localStorage)
-      mock-db.js           # Backend simulado (solo modo MOCK)
     components/
       layout.js            # Shell: sidebar + navbar + contenido
       sidebar.js
@@ -86,7 +88,7 @@ src/
       toast.js                # Notificaciones
       badges.js                # Badges ABC / semáforo
     services/
-      api.js                    # Cliente HTTP central (mock/real)
+      api.js                    # Cliente HTTP central
       auth.service.js
       product.service.js
       supplier.service.js

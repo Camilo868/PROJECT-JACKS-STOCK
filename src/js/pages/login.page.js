@@ -18,7 +18,7 @@ export async function renderLoginPage(container) {
       <aside class="sw-auth-aside d-none d-lg-flex">
         <div class="sw-brand text-white">
           <div class="sw-brand-mark"><img src="./src/assets/img/jack.png" alt="Jacks-Stock" style="width:52px; height:42px; object-fit:contain;"></div>
-          JACKS STOCK
+          JACKS STOCKS
         </div>
         <div>
           <h2 class="fw-bold mb-3" style="max-width:420px;">Compra lo justo, en el momento justo.</h2>
@@ -48,7 +48,7 @@ export async function renderLoginPage(container) {
         <div class="sw-auth-card">  
           <div class="sw-brand d-lg-none mb-4">
             <div class="sw-brand-mark"><img src="./src/assets/img/jack.png" alt="Jacks-Stock" style="width:52px; height:42px; object-fit:contain;"></div>
-            JACKS STOCK
+            JACKS STOCKS
           </div>
           <h3 class="fw-bold mb-1">Bienvenido de nuevo</h3>
           <p class="text-secondary mb-4">Ingresa tus credenciales para acceder al panel.</p>
@@ -56,7 +56,7 @@ export async function renderLoginPage(container) {
           <form id="login-form" novalidate>
             <div class="mb-3">
               <label class="form-label" for="email">Correo electrónico</label>
-              <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="admin@stockwise.com" required>
+              <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="juan.perez@empresa.com" required>
               <div class="invalid-feedback"></div>
             </div>
             <div class="mb-3">
@@ -76,7 +76,7 @@ export async function renderLoginPage(container) {
 
           <div class="alert alert-light border mt-3 small mb-3">
             <i class="bi bi-info-circle me-1"></i>
-            Cuenta demo: <strong>admin@stockwise.com</strong> / <strong>admin123</strong>
+            Cuenta demo: <strong>juan.perez@empresa.com</strong> / <strong>admin123</strong>
           </div>
 
           <p class="text-center text-secondary mt-4 mb-0">
