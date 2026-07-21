@@ -1,10 +1,8 @@
 /**
- * category.service.js — Catálogo de categorías.
+ * category.service.js — Category catalog.
  *
- * La base de datos real tiene una tabla `categories` separada de
- * `products` (products solo guarda `category_id`). Este servicio
- * se agrega porque el mock original no la tenía: el mock guardaba
- * el nombre de la categoría directo en el producto (texto libre).
+ * The real database has a `categories` table separate from
+ * `products` (products only stores `category_id`).
  */
 import { api } from './api.js';
 

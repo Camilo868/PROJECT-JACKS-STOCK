@@ -21,13 +21,13 @@ export async function renderRegisterPage(container) {
          JACKS STOCKS
         </div>
         <div>
-          <h2 class="fw-bold mb-3" style="max-width:420px;">Crea tu cuenta de encargado de bodega.</h2>
+          <h2 class="fw-bold mb-3" style="max-width:420px;">Create your warehouse manager account.</h2>
           <p class="text-white-50" style="max-width:420px;">
-            Registra tu catálogo, controla tus movimientos y deja que el sistema
-            calcule cuánto y cuándo comprar.
+            Register your catalog, track your movements and let the system
+            calculate how much and when to buy.
           </p>
         </div>
-        <div class="small text-white-50">CodeUp RIWI · Proyecto Integrador 2026</div>
+        <div class="small text-white-50">CodeUp RIWI · Capstone Project 2026</div>
       </aside>
 
       <div class="sw-auth-form-side">
@@ -36,46 +36,46 @@ export async function renderRegisterPage(container) {
             <div class="sw-brand-mark"><i class="bi bi-boxes"></i></div>
             JACKS STOCKS
           </div>
-          <h3 class="fw-bold mb-1">Crea tu cuenta</h3>
-          <p class="text-secondary mb-4">Empieza a gestionar tu inventario en minutos.</p>
+          <h3 class="fw-bold mb-1">Create your account</h3>
+          <p class="text-secondary mb-4">Start managing your inventory in minutes.</p>
 
           <form id="register-form" novalidate>
             <div class="row g-2">
               <div class="col-6 mb-3">
-                <label class="form-label" for="name">Nombre</label>
-                <input type="text" class="form-control form-control-lg" id="name" name="name" placeholder="Nombre" required>
+                <label class="form-label" for="name">First name</label>
+                <input type="text" class="form-control form-control-lg" id="name" name="name" placeholder="First name" required>
                 <div class="invalid-feedback"></div>
               </div>
               <div class="col-6 mb-3">
-                <label class="form-label" for="lastName">Apellido</label>
-                <input type="text" class="form-control form-control-lg" id="lastName" name="lastName" placeholder="Apellido" required>
+                <label class="form-label" for="lastName">Last name</label>
+                <input type="text" class="form-control form-control-lg" id="lastName" name="lastName" placeholder="Last name" required>
                 <div class="invalid-feedback"></div>
               </div>
             </div>
             <div class="mb-3">
-              <label class="form-label" for="email">Correo electrónico</label>
-              <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="tucorreo@empresa.com" required>
+              <label class="form-label" for="email">Email</label>
+              <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="you@company.com" required>
               <div class="invalid-feedback"></div>
             </div>
             <div class="mb-3">
-              <label class="form-label" for="password">Contraseña</label>
-              <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="Mínimo 6 caracteres" required>
+              <label class="form-label" for="password">Password</label>
+              <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="At least 6 characters" required>
               <div class="invalid-feedback"></div>
             </div>
             <div class="mb-3">
-              <label class="form-label" for="confirmPassword">Confirmar contraseña</label>
-              <input type="password" class="form-control form-control-lg" id="confirmPassword" name="confirmPassword" placeholder="Repite tu contraseña" required>
+              <label class="form-label" for="confirmPassword">Confirm password</label>
+              <input type="password" class="form-control form-control-lg" id="confirmPassword" name="confirmPassword" placeholder="Repeat your password" required>
               <div class="invalid-feedback"></div>
             </div>
             <div class="alert alert-danger d-none" id="register-error"></div>
             <button type="submit" class="btn sw-btn-accent btn-lg w-100 mt-2" id="register-submit">
-              Crear cuenta
+              Create account
               <span class="spinner-border spinner-border-sm ms-1 d-none" id="register-spinner"></span>
             </button>
           </form>
 
           <p class="text-center text-secondary mt-4 mb-0">
-            ¿Ya tienes cuenta? <a href="#/login" class="sw-link">Inicia sesión</a>
+            Already have an account? <a href="#/login" class="sw-link">Log in</a>
           </p>
         </div>
       </div>
@@ -96,7 +96,7 @@ export async function renderRegisterPage(container) {
       lastName: [validators.required],
       email: [validators.required, validators.email],
       password: [validators.required, validators.minLength(6)],
-      confirmPassword: [validators.required, validators.match(data.password, 'Las contraseñas no coinciden.')],
+      confirmPassword: [validators.required, validators.match(data.password, 'Passwords do not match.')],
     });
 
     form.querySelectorAll('.form-control').forEach((input) => {
@@ -115,9 +115,9 @@ export async function renderRegisterPage(container) {
       await register(data.name, data.lastName, data.email, data.password);
       navigateTo('/dashboard');
     } catch (error) {
-      errorBox.textContent = error.message || 'No se pudo crear la cuenta.';
+      errorBox.textContent = error.message || 'Could not create the account.';
       errorBox.classList.remove('d-none');
-      showError(error.message || 'No se pudo crear la cuenta.');
+      showError(error.message || 'Could not create the account.');
     } finally {
       submitBtn.disabled = false;
       spinner.classList.add('d-none');

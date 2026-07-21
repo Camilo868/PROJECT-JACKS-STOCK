@@ -1,8 +1,8 @@
 /**
  * api.js
- * Cliente HTTP central. Todos los servicios pasan por aquí.
- * Todas las peticiones se envían por fetch() al backend Express real,
- * definido en BASE_URL.
+ * Central HTTP client. All services go through here.
+ * All requests are sent via fetch() to the real Express backend,
+ * defined in BASE_URL.
  */
 
 import { getToken, clearSession } from '../core/session.js';
@@ -20,9 +20,9 @@ class ApiError extends Error {
 }
 
 /**
- * Realiza una petición HTTP contra la API.
+ * Performs an HTTP request against the API.
  * @param {string} method - GET | POST | PUT | PATCH | DELETE
- * @param {string} endpoint - Ej: '/products' o '/products/123'
+ * @param {string} endpoint - E.g.: '/products' or '/products/123'
  * @param {object} [body]
  */
 export async function request(method, endpoint, body) {
@@ -38,24 +38,30 @@ export async function request(method, endpoint, body) {
       body: body ? JSON.stringify(body) : undefined,
     });
   } catch (error) {
-    throw new ApiError('No se pudo conectar con el servidor. ¿Está corriendo el backend?', 0);
+    throw new ApiError('Could not connect to the server. Is the backend running?', 0);
   }
 
-  if (response.status === 401) {
+  // A 401 from the login/register endpoints just means "wrong
+  // credentials" — there's no session to expire yet, so it shouldn't
+  // log the user out or redirect. Only treat 401 as an expired
+  // session when we were actually sending a token (i.e. the user was
+  // supposedly logged in already).
+  const isAuthEndpoint = endpoint.startsWith('/users/login') || endpoint.startsWith('/users/register');
+  if (response.status === 401 && token && !isAuthEndpoint) {
     clearSession();
     navigateTo('/login');
-    throw new ApiError('Sesión expirada. Inicia sesión nuevamente.', 401);
+    throw new ApiError('Session expired. Please log in again.', 401);
   }
 
   const contentType = response.headers.get('content-type') || '';
   const payload = contentType.includes('application/json') ? await response.json() : null;
 
   if (!response.ok) {
-    throw new ApiError(payload?.message || 'Ocurrió un error en el servidor.', response.status);
+    throw new ApiError(payload?.message || 'An error occurred on the server.', response.status);
   }
 
-  // El backend real siempre responde { success, message, data }.
-  // Se desenvuelve acá para que los services no tengan que hacerlo.
+  // The real backend always responds with { success, message, data }.
+  // Unwrapped here so services don't have to do it themselves.
   return payload && typeof payload === 'object' && 'data' in payload ? payload.data : payload;
 }
 

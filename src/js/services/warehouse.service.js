@@ -1,15 +1,10 @@
 /**
- * warehouse.service.js — Bodegas.
+ * warehouse.service.js — Warehouses.
  *
- * La BD real agrega dos columnas que el mock no tenía: `capacity`
- * (capacidad máxima) y `user_id` (usuario responsable de la bodega).
- * Se incluyen ambas mapeadas, aunque las pantallas actuales solo
- * usan name/location — quedan disponibles para cuando se necesiten.
- *
- * ⚠️ Aviso: el controlador `updateWarehouse` del backend tiene un bug
- * (actualiza una tabla mal escrita "Waterhouses" con columnas de
- * usuarios en vez de bodegas). Editar una bodega fallará hasta que se
- * corrija ahí. Avísale a tu compañero de backend.
+ * The real DB adds two columns the mock didn't have: `capacity`
+ * (maximum capacity) and `user_id` (the warehouse's responsible
+ * user). Both are mapped, even though current screens only use
+ * name/location — available for whenever they're needed.
  */
 import { api } from './api.js';
 
@@ -40,8 +35,8 @@ export const WarehouseService = {
   remove: (id) => api.delete(`/warehouses/${id}`),
 
   /**
-   * Espacio disponible por bodega. El cálculo se hace 100% en el
-   * backend (SQL), acá solo se traducen los nombres de columna.
+   * Available space per warehouse. The calculation happens 100% in
+   * the backend (SQL) — only column names are translated here.
    */
   getCapacity: async () => (await api.get('/warehouses/capacity')).map((row) => ({
     id: row.id,

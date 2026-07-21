@@ -1,7 +1,7 @@
 /**
  * layout.js
- * Layout reutilizable para las páginas privadas del panel administrativo:
- * monta sidebar + navbar + contenedor de contenido.
+ * Reusable layout for the admin panel's private pages: mounts the
+ * sidebar + navbar + content container.
  */
 import { renderSidebar } from './sidebar.js';
 import { renderNavbar } from './navbar.js';
@@ -9,8 +9,8 @@ import { logout } from '../services/auth.service.js';
 import { navigateTo } from '../core/router.js';
 
 /**
- * Renderiza el shell de la aplicación dentro de `container` y devuelve
- * el nodo donde la página debe insertar su contenido.
+ * Renders the app shell inside `container` and returns the node
+ * where the page should insert its content.
  * @param {HTMLElement} container
  * @param {{ title: string, activePath: string }} options
  * @returns {HTMLElement} contentEl

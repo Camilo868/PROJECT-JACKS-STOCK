@@ -1,28 +1,22 @@
 /**
- * movement.service.js — Entradas y salidas de inventario.
+ * movement.service.js — Stock entries and exits.
  *
- * Diferencias con la BD real:
- *   - La BD usa `movement_type` con valores 'IN' / 'OUT' (mayúsculas),
- *     no 'entrada' / 'salida'. Se traduce en los dos sentidos.
- *   - La BD exige `warehouse_id`: un movimiento pasa en UNA bodega
- *     específica (afecta el stock de esa bodega en `inventory`). El
- *     mock no lo pedía porque el producto tenía una sola bodega fija.
- *   - La BD NO tiene columna para la "nota" que se escribía al
- *     registrar un movimiento. Se sigue pidiendo en el formulario por
- *     si se agrega esa columna más adelante, pero por ahora NO se
- *     guarda en el backend real (avisar al equipo si se necesita).
- *   - `date` (mock) es `movement_date` (BD).
+ * Differences from the raw database:
+ *   - The database uses `movement_type` with 'IN' / 'OUT' values, not
+ *     'entrada' / 'salida'. Translated both ways below.
+ *   - A movement always belongs to ONE warehouse (stock is tracked per
+ *     warehouse in `inventory`), so `warehouseId` is required.
+ *   - `date` (UI) is `movement_date` (DB).
  *
- * Además, registrar un movimiento debe actualizar el stock real en
- * `inventory` (antes esto lo hacía el mock automáticamente). Como el
- * backend no tiene esa lógica automática todavía, este servicio la
- * hace desde el frontend: lee el inventario actual de esa bodega/
- * producto y lo actualiza según el tipo de movimiento.
+ * Registering a movement must also update the real stock in
+ * `inventory`. The backend doesn't do that automatically yet, so this
+ * service does it here: it reads current stock for that
+ * product/warehouse and adjusts it based on the movement type.
  */
 import { api } from './api.js';
 
-const TYPE_TO_DB = { entrada: 'IN', salida: 'OUT' };
-const TYPE_FROM_DB = { IN: 'entrada', OUT: 'salida' };
+const TYPE_TO_DB = { in: 'IN', out: 'OUT' };
+const TYPE_FROM_DB = { IN: 'in', OUT: 'out' };
 
 function fromDb(row) {
   return {
@@ -32,16 +26,16 @@ function fromDb(row) {
     type: TYPE_FROM_DB[row.movement_type] || row.movement_type,
     quantity: row.quantity,
     date: row.movement_date,
-    note: '', // no existe en la BD todavía
+    note: row.note || '',
   };
 }
 
-/** Ajusta la fila de `inventory` de ese producto/bodega según el movimiento. */
+/** Adjusts the `inventory` row for that product/warehouse based on the movement. */
 async function applyStockChange(productId, warehouseId, type, quantity) {
   const inventory = await api.get(`/inventory/product/${productId}`);
   const record = inventory.find((inv) => String(inv.warehouse_id) === String(warehouseId));
   const currentQty = record ? Number(record.quantity) : 0;
-  const delta = type === 'entrada' ? Number(quantity) : -Number(quantity);
+  const delta = type === 'in' ? Number(quantity) : -Number(quantity);
   const nextQty = currentQty + delta;
 
   if (record) {
@@ -61,12 +55,12 @@ export const MovementService = {
   getByProduct: async (productId) => (await api.get(`/movements/product/${productId}`)).map(fromDb),
 
   create: async (movement) => {
-    if (movement.type === 'salida') {
+    if (movement.type === 'out') {
       const inventory = await api.get(`/inventory/product/${movement.productId}`);
       const record = inventory.find((inv) => String(inv.warehouse_id) === String(movement.warehouseId));
       const currentQty = record ? Number(record.quantity) : 0;
       if (Number(movement.quantity) > currentQty) {
-        throw new Error('La cantidad de salida supera el stock disponible en esa bodega.');
+        throw new Error('The exit quantity is greater than the available stock in that warehouse.');
       }
     }
 
@@ -76,6 +70,7 @@ export const MovementService = {
       movement_type: TYPE_TO_DB[movement.type] || movement.type,
       quantity: Number(movement.quantity),
       movement_date: movement.date || new Date().toISOString().slice(0, 10),
+      note: movement.note || null,
     });
 
     await applyStockChange(movement.productId, movement.warehouseId, movement.type, movement.quantity);

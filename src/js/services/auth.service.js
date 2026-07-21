@@ -1,5 +1,5 @@
 /**
- * auth.service.js — Autenticación de usuarios.
+ * auth.service.js — User authentication.
  *
  * El backend real expone el login/registro dentro del router de
  * usuarios: POST /users/login y POST /users/register (no /auth/*).

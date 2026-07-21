@@ -1,13 +1,13 @@
 /**
  * session.js
- * Maneja la persistencia de la sesión del usuario autenticado.
- * Usa localStorage para mantener la sesión activa entre recargas.
+ * Handles persistence of the authenticated user's session.
+ * Uses localStorage to keep the session active across reloads.
  */
 
 const SESSION_KEY = 'stockwise_session';
 
 /**
- * Guarda la sesión del usuario autenticado.
+ * Saves the authenticated user's session.
  * @param {{ token: string, user: object }} sessionData
  */
 export function setSession(sessionData) {
@@ -15,7 +15,7 @@ export function setSession(sessionData) {
 }
 
 /**
- * Obtiene la sesión actual, o null si no existe.
+ * Gets the current session, or null if none exists.
  * @returns {{ token: string, user: object } | null}
  */
 export function getSession() {

@@ -21,27 +21,27 @@ export async function renderLoginPage(container) {
           JACKS STOCKS
         </div>
         <div>
-          <h2 class="fw-bold mb-3" style="max-width:420px;">Compra lo justo, en el momento justo.</h2>
+          <h2 class="fw-bold mb-3" style="max-width:420px;">Buy just enough, right on time.</h2>
           <p class="text-white-50" style="max-width:420px;">
-            EOQ, clasificación ABC y punto de reorden calculados automáticamente
-            para que nunca te falte ni te sobre inventario.
+            EOQ, ABC classification and reorder point calculated automatically
+            so you never run short or overstock.
           </p>
           <div class="sw-auth-stat">
             <i class="bi bi-graph-up-arrow"></i>
             <div>
-              <div class="fw-semibold">Clasificación ABC automática</div>
-              <div class="small text-white-50">Prioriza los productos que realmente mueven tu negocio.</div>
+              <div class="fw-semibold">Automatic ABC classification</div>
+              <div class="small text-white-50">Prioritize the products that really move your business.</div>
             </div>
           </div>
           <div class="sw-auth-stat">
             <i class="bi bi-stoplights"></i>
             <div>
-              <div class="fw-semibold">Semáforo de criticidad</div>
-              <div class="small text-white-50">Sabe qué comprar primero, con colores claros.</div>
+              <div class="fw-semibold">Criticality semaphore</div>
+              <div class="small text-white-50">Know what to buy first, with clear colors.</div>
             </div>
           </div>
         </div>
-        <div class="small text-white-50">CodeUp RIWI · Proyecto Integrador 2026</div>
+        <div class="small text-white-50">CodeUp RIWI · Capstone Project 2026</div>
       </aside>
 
       <div class="sw-auth-form-side">
@@ -50,17 +50,17 @@ export async function renderLoginPage(container) {
             <div class="sw-brand-mark"><img src="./src/assets/img/jack.png" alt="Jacks-Stock" style="width:52px; height:42px; object-fit:contain;"></div>
             JACKS STOCKS
           </div>
-          <h3 class="fw-bold mb-1">Bienvenido de nuevo</h3>
-          <p class="text-secondary mb-4">Ingresa tus credenciales para acceder al panel.</p>
+          <h3 class="fw-bold mb-1">Welcome back</h3>
+          <p class="text-secondary mb-4">Enter your credentials to access the panel.</p>
 
           <form id="login-form" novalidate>
             <div class="mb-3">
-              <label class="form-label" for="email">Correo electrónico</label>
-              <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="juan.perez@empresa.com" required>
+              <label class="form-label" for="email">Email</label>
+              <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="you@company.com" required>
               <div class="invalid-feedback"></div>
             </div>
             <div class="mb-3">
-              <label class="form-label" for="password">Contraseña</label>
+              <label class="form-label" for="password">Password</label>
               <div class="input-group input-group-lg">
                 <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
                 <button class="btn btn-outline-secondary" type="button" id="toggle-password"><i class="bi bi-eye"></i></button>
@@ -69,18 +69,13 @@ export async function renderLoginPage(container) {
             </div>
             <div class="alert alert-danger d-none" id="login-error"></div>
             <button type="submit" class="btn sw-btn-accent btn-lg w-100 mt-2" id="login-submit">
-              Iniciar sesión
+              Log in
               <span class="spinner-border spinner-border-sm ms-1 d-none" id="login-spinner"></span>
             </button>
           </form>
 
-          <div class="alert alert-light border mt-3 small mb-3">
-            <i class="bi bi-info-circle me-1"></i>
-            Cuenta demo: <strong>juan.perez@empresa.com</strong> / <strong>admin123</strong>
-          </div>
-
           <p class="text-center text-secondary mt-4 mb-0">
-            ¿No tienes cuenta? <a href="#/register" class="sw-link">Regístrate aquí</a>
+            Don't have an account? <a href="#/register" class="sw-link">Sign up here</a>
           </p>
         </div>
       </div>
@@ -126,9 +121,9 @@ export async function renderLoginPage(container) {
       await login(data.email, data.password);
       navigateTo('/dashboard');
     } catch (error) {
-      errorBox.textContent = error.message || 'No se pudo iniciar sesión.';
+      errorBox.textContent = error.message || 'Could not log in.';
       errorBox.classList.remove('d-none');
-      showError(error.message || 'No se pudo iniciar sesión.');
+      showError(error.message || 'Could not log in.');
     } finally {
       submitBtn.disabled = false;
       spinner.classList.add('d-none');

@@ -1,21 +1,22 @@
 /**
  * validators.js
- * Validadores reutilizables para formularios.
+ * Reusable form validators.
  */
 
 export const validators = {
-  required: (value) => (value !== null && value !== undefined && String(value).trim() !== '') || 'Este campo es obligatorio.',
-  email: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || 'Ingresa un correo electrónico válido.',
-  minLength: (min) => (value) => String(value).length >= min || `Debe tener al menos ${min} caracteres.`,
-  positiveNumber: (value) => (Number(value) > 0) || 'Debe ser un número mayor que cero.',
-  nonNegativeNumber: (value) => (Number(value) >= 0) || 'Debe ser un número mayor o igual a cero.',
+  required: (value) => (value !== null && value !== undefined && String(value).trim() !== '') || 'This field is required.',
+  email: (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || 'Enter a valid email address.',
+  minLength: (min) => (value) => String(value).length >= min || `Must be at least ${min} characters.`,
+  positiveNumber: (value) => (Number(value) > 0) || 'Must be a number greater than zero.',
+  nonNegativeNumber: (value) => (Number(value) >= 0) || 'Must be a number greater than or equal to zero.',
+  integer: (value) => Number.isInteger(Number(value)) || 'Must be a whole number.',
   match: (otherValue, message) => (value) => value === otherValue || message,
 };
 
 /**
- * Valida un objeto de datos contra un esquema de reglas.
+ * Validates a data object against a rule schema.
  * @param {object} data
- * @param {object} schema - { campo: [regla1, regla2, ...] }
+ * @param {object} schema - { field: [rule1, rule2, ...] }
  * @returns {{ valid: boolean, errors: object }}
  */
 export function validateForm(data, schema) {

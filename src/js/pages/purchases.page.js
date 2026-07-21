@@ -1,8 +1,8 @@
 /**
  * purchases.page.js
- * Órdenes de compra manuales. Sugiere cantidad usando el EOQ del
- * producto y, al marcar una orden como recibida, genera automáticamente
- * los movimientos de entrada correspondientes.
+ * Manual purchase orders. Suggests a quantity using the product's EOQ
+ * and, when an order is marked as received, automatically generates
+ * the corresponding entry movements.
  */
 import { renderLayout } from '../components/layout.js';
 import { ProductService } from '../services/product.service.js';
@@ -21,13 +21,13 @@ let modalEl = null;
 let itemRowCount = 0;
 
 const STATUS_META = {
-  pendiente: { label: 'Pendiente', class: 'text-bg-warning' },
-  recibida: { label: 'Recibida', class: 'text-bg-success' },
-  cancelada: { label: 'Cancelada', class: 'text-bg-secondary' },
+  pending: { label: 'Pending', class: 'text-bg-warning' },
+  received: { label: 'Received', class: 'text-bg-success' },
+  cancelled: { label: 'Cancelled', class: 'text-bg-secondary' },
 };
 
 export async function renderPurchasesPage(container) {
-  const content = renderLayout(container, { title: 'Órdenes de compra', activePath: '/compras' });
+  const content = renderLayout(container, { title: 'Purchase orders', activePath: '/purchases' });
   content.innerHTML = `<div class="sw-loading"><div class="spinner-border" style="color:var(--sw-accent);"></div></div>`;
   await loadData();
   paint(content);
@@ -39,8 +39,8 @@ async function loadData() {
   ]);
 }
 
-const getSupplierName = (id) => suppliers.find((s) => s.id === id)?.name || '—';
-const getProductName = (id) => products.find((p) => p.id === id)?.name || 'Producto eliminado';
+const getSupplierName = (id) => suppliers.find((s) => String(s.id) === String(id))?.name || '—';
+const getProductName = (id) => products.find((p) => String(p.id) === String(id))?.name || 'Deleted product';
 
 function paint(content) {
   const sorted = [...purchases].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -48,18 +48,18 @@ function paint(content) {
   content.innerHTML = `
     <div class="sw-page-header">
       <div>
-        <div class="sw-page-title">Órdenes de compra</div>
-        <div class="sw-page-subtitle">Crea órdenes manuales; la cantidad sugerida se calcula con el EOQ.</div>
+        <div class="sw-page-title">Purchase orders</div>
+        <div class="sw-page-subtitle">Create manual orders; the suggested quantity is calculated with the EOQ.</div>
       </div>
-      <button class="btn sw-btn-accent" id="btn-new-purchase"><i class="bi bi-plus-lg me-1"></i>Nueva orden de compra</button>
+      <button class="btn sw-btn-accent" id="btn-new-purchase"><i class="bi bi-plus-lg me-1"></i>New purchase order</button>
     </div>
 
     <div class="sw-card p-3 p-lg-4">
       ${sorted.length === 0 ? `
-        <div class="sw-empty-state"><i class="bi bi-cart-x"></i><div>No hay órdenes de compra registradas.</div></div>` : `
+        <div class="sw-empty-state"><i class="bi bi-cart-x"></i><div>No purchase orders registered yet.</div></div>` : `
       <div class="accordion" id="purchases-accordion">
         ${sorted.map((order, idx) => {
-          const meta = STATUS_META[order.status] || STATUS_META.pendiente;
+          const meta = STATUS_META[order.status] || STATUS_META.pending;
           return `
           <div class="accordion-item">
             <h2 class="accordion-header">
@@ -67,7 +67,7 @@ function paint(content) {
                 <div class="d-flex justify-content-between align-items-center w-100 me-3 flex-wrap gap-2">
                   <div>
                     <span class="fw-semibold">${escapeHtml(getSupplierName(order.supplierId))}</span>
-                    <span class="small text-secondary ms-2">${formatDate(order.createdAt)} · ${order.items.length} ítem(s)</span>
+                    <span class="small text-secondary ms-2">${formatDate(order.createdAt)} · ${order.items.length} item(s)</span>
                   </div>
                   <div class="d-flex align-items-center gap-2">
                     <span class="fw-semibold">${formatCurrency(order.total)}</span>
@@ -79,7 +79,7 @@ function paint(content) {
             <div id="order-${order.id}" class="accordion-collapse collapse ${idx === 0 ? 'show' : ''}" data-bs-parent="#purchases-accordion">
               <div class="accordion-body">
                 <table class="table sw-table mb-3">
-                  <thead><tr><th>Producto</th><th>Cantidad</th><th>Costo unit.</th><th>Subtotal</th></tr></thead>
+                  <thead><tr><th>Product</th><th>Quantity</th><th>Unit cost</th><th>Subtotal</th></tr></thead>
                   <tbody>
                     ${order.items.map((it) => `
                       <tr>
@@ -91,10 +91,10 @@ function paint(content) {
                   </tbody>
                 </table>
                 <div class="d-flex gap-2 flex-wrap">
-                  ${order.status === 'pendiente' ? `
-                    <button class="btn btn-sm btn-success" data-action="receive" data-id="${order.id}"><i class="bi bi-check2-circle me-1"></i>Marcar como recibida</button>
-                    <button class="btn btn-sm btn-outline-secondary" data-action="cancel" data-id="${order.id}"><i class="bi bi-x-circle me-1"></i>Cancelar orden</button>` : ''}
-                  <button class="btn btn-sm btn-light text-danger" data-action="delete" data-id="${order.id}"><i class="bi bi-trash3 me-1"></i>Eliminar</button>
+                  ${order.status === 'pending' ? `
+                    <button class="btn btn-sm btn-success" data-action="receive" data-id="${order.id}"><i class="bi bi-check2-circle me-1"></i>Mark as received</button>
+                    <button class="btn btn-sm btn-outline-secondary" data-action="cancel" data-id="${order.id}"><i class="bi bi-x-circle me-1"></i>Cancel order</button>` : ''}
+                  <button class="btn btn-sm btn-light text-danger" data-action="delete" data-id="${order.id}"><i class="bi bi-trash3 me-1"></i>Delete</button>
                 </div>
               </div>
             </div>
@@ -117,54 +117,56 @@ function paint(content) {
 }
 
 async function receiveOrder(content, id) {
-  const order = purchases.find((o) => o.id === id);
-  const ok = await confirmDialog('Se registrarán entradas de inventario por cada ítem de la orden y se marcará como recibida.', 'Recibir orden de compra');
+  const order = purchases.find((o) => String(o.id) === String(id));
+  if (!order) return;
+  const ok = await confirmDialog('Inventory entries will be logged for each item in the order, and it will be marked as received.', 'Receive purchase order');
   if (!ok) return;
   try {
     for (const item of order.items) {
-      const product = products.find((p) => p.id === item.productId);
-      // Se usa la primera bodega registrada del producto. Si el
-      // producto no tiene ninguna bodega asignada todavía, no se puede
-      // saber dónde entra el stock — se avisa en vez de adivinar.
+      const product = products.find((p) => String(p.id) === String(item.productId));
+      // Uses the product's first registered warehouse. If the product
+      // has no warehouse assigned yet, we can't guess where the stock
+      // should go — warn instead of guessing.
       const warehouseId = product?.stockByWarehouse?.[0]?.warehouseId;
       if (!warehouseId) {
-        throw new Error(`"${product?.name || 'Producto'}" no tiene una bodega asignada. Edítalo primero en Productos.`);
+        throw new Error(`"${product?.name || 'Product'}" has no warehouse assigned. Edit it first in Products.`);
       }
       await MovementService.create({
         productId: item.productId,
         warehouseId,
-        type: 'entrada',
+        type: 'in',
         quantity: item.quantity,
+        note: `Received from purchase order #${order.id}`,
       });
     }
-    await PurchaseService.updateStatus(order.id, 'recibida');
-    showSuccess('Orden marcada como recibida y stock actualizado.');
+    await PurchaseService.updateStatus(order.id, 'received');
+    showSuccess('Order marked as received and stock updated.');
     await loadData();
     paint(content);
   } catch (error) {
-    showError(error.message || 'No se pudo procesar la recepción.');
+    showError(error.message || 'Could not process the receipt.');
   }
 }
 
 async function cancelOrder(content, id) {
-  const ok = await confirmDialog('La orden de compra se marcará como cancelada.', 'Cancelar orden');
+  const ok = await confirmDialog('The purchase order will be marked as cancelled.', 'Cancel order');
   if (!ok) return;
-  await PurchaseService.updateStatus(id, 'cancelada');
-  showSuccess('Orden cancelada.');
+  await PurchaseService.updateStatus(id, 'cancelled');
+  showSuccess('Order cancelled.');
   await loadData();
   paint(content);
 }
 
 async function deleteOrder(content, id) {
-  const ok = await confirmDialog('Esta orden de compra se eliminará permanentemente.', 'Eliminar orden');
+  const ok = await confirmDialog('This purchase order will be permanently deleted.', 'Delete order');
   if (!ok) return;
   await PurchaseService.remove(id);
-  showSuccess('Orden eliminada.');
+  showSuccess('Order deleted.');
   await loadData();
   paint(content);
 }
 
-/* ------------------------- Modal de nueva orden ------------------------- */
+/* ------------------------- New order modal ------------------------- */
 
 function ensureModal() {
   if (modalEl) return modalEl;
@@ -180,18 +182,18 @@ function itemRowTemplate(rowId) {
   return `
     <div class="row g-2 align-items-end mb-2 purchase-item-row" data-row="${rowId}">
       <div class="col-6">
-        <label class="form-label small mb-1">Producto</label>
+        <label class="form-label small mb-1">Product</label>
         <select class="form-select form-select-sm item-product" required>
-          <option value="" disabled selected>Selecciona...</option>
+          <option value="" disabled selected>Select...</option>
           ${productOptions}
         </select>
       </div>
       <div class="col-3">
-        <label class="form-label small mb-1">Cantidad</label>
+        <label class="form-label small mb-1">Quantity</label>
         <input type="number" min="1" step="1" class="form-control form-control-sm item-quantity" required>
       </div>
       <div class="col-2">
-        <label class="form-label small mb-1">Costo unit.</label>
+        <label class="form-label small mb-1">Unit cost</label>
         <input type="text" class="form-control form-control-sm item-cost" disabled>
       </div>
       <div class="col-1 text-end">
@@ -209,27 +211,27 @@ function openPurchaseModal(content) {
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title fw-bold">Nueva orden de compra</h5>
+          <h5 class="modal-title fw-bold">New purchase order</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <form id="purchase-form" novalidate>
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label">Proveedor</label>
+              <label class="form-label">Supplier</label>
               <select class="form-select" id="purchase-supplier" required>
-                <option value="" disabled selected>Selecciona un proveedor...</option>
+                <option value="" disabled selected>Select a supplier...</option>
                 ${supplierOptions}
               </select>
             </div>
-            <label class="form-label">Ítems del pedido</label>
+            <label class="form-label">Order items</label>
             <div id="purchase-items"></div>
-            <button type="button" class="btn btn-sm btn-outline-secondary mt-1" id="add-item-row"><i class="bi bi-plus-lg me-1"></i>Agregar ítem</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-1" id="add-item-row"><i class="bi bi-plus-lg me-1"></i>Add item</button>
             <div class="alert alert-danger mt-3 d-none" id="purchase-error"></div>
             <div class="text-end fw-bold mt-3 fs-5" id="purchase-total">Total: ${formatCurrency(0)}</div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn sw-btn-accent">Crear orden</button>
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn sw-btn-accent">Create order</button>
           </div>
         </form>
       </div>
@@ -294,24 +296,24 @@ function openPurchaseModal(content) {
     });
 
     if (!supplierId) {
-      errorBox.textContent = 'Selecciona un proveedor.';
+      errorBox.textContent = 'Select a supplier.';
       errorBox.classList.remove('d-none');
       return;
     }
     if (items.some((it) => !it.productId || !it.quantity || it.quantity <= 0)) {
-      errorBox.textContent = 'Completa todos los ítems con producto y cantidad válida.';
+      errorBox.textContent = 'Fill in every item with a product and a valid quantity.';
       errorBox.classList.remove('d-none');
       return;
     }
 
     try {
       await PurchaseService.create({ supplierId, items });
-      showSuccess('Orden de compra creada correctamente.');
+      showSuccess('Purchase order created successfully.');
       modal.hide();
       await loadData();
       paint(content);
     } catch (error) {
-      errorBox.textContent = error.message || 'No se pudo crear la orden.';
+      errorBox.textContent = error.message || 'Could not create the order.';
       errorBox.classList.remove('d-none');
     }
   });

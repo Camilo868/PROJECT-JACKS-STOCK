@@ -1,12 +1,13 @@
 /**
  * products.page.js
- * CRUD de productos + cálculo de EOQ y clase ABC en el listado.
+ * Product CRUD + EOQ calculation and ABC class in the listing.
  */
 import { renderLayout } from '../components/layout.js';
 import { ProductService } from '../services/product.service.js';
 import { SupplierService } from '../services/supplier.service.js';
 import { WarehouseService } from '../services/warehouse.service.js';
 import { CategoryService } from '../services/category.service.js';
+import { SettingsService } from '../services/settings.service.js';
 import { openFormModal } from '../components/form-modal.js';
 import { confirmDialog } from '../components/confirm-dialog.js';
 import { showSuccess, showError } from '../components/toast.js';
@@ -18,7 +19,7 @@ import { formatCurrency, escapeHtml } from '../utils/format.js';
 let state = { products: [], suppliers: [], warehouses: [], categories: [], search: '' };
 
 export async function renderProductsPage(container) {
-  const content = renderLayout(container, { title: 'Productos', activePath: '/productos' });
+  const content = renderLayout(container, { title: 'Products', activePath: '/products' });
   content.innerHTML = `<div class="sw-loading"><div class="spinner-border" style="color:var(--sw-accent);"></div></div>`;
 
   await loadData();
@@ -36,7 +37,7 @@ async function loadData() {
 }
 
 function getSupplierName(id) {
-  return state.suppliers.find((s) => s.id === id)?.name || '—';
+  return state.suppliers.find((s) => String(s.id) === String(id))?.name || '—';
 }
 
 function getFilteredProducts() {
@@ -55,32 +56,32 @@ function paint(content) {
   content.innerHTML = `
     <div class="sw-page-header">
       <div>
-        <div class="sw-page-title">Productos</div>
-        <div class="sw-page-subtitle">Catálogo, costos y punto de pedido económico (EOQ).</div>
+        <div class="sw-page-title">Products</div>
+        <div class="sw-page-subtitle">Catalog, costs and Economic Order Quantity (EOQ).</div>
       </div>
-      <button class="btn sw-btn-accent" id="btn-new-product"><i class="bi bi-plus-lg me-1"></i>Nuevo producto</button>
+      <button class="btn sw-btn-accent" id="btn-new-product"><i class="bi bi-plus-lg me-1"></i>New product</button>
     </div>
 
     <div class="sw-card p-3 p-lg-4">
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div class="input-group" style="max-width:320px;">
           <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-          <input type="text" class="form-control" id="product-search" placeholder="Buscar por nombre, SKU o categoría..." value="${escapeHtml(state.search)}">
+          <input type="text" class="form-control" id="product-search" placeholder="Search by name, SKU or category..." value="${escapeHtml(state.search)}">
         </div>
-        <div class="small text-secondary">${filtered.length} de ${state.products.length} productos</div>
+        <div class="small text-secondary">${filtered.length} of ${state.products.length} products</div>
       </div>
 
       ${filtered.length === 0 ? `
         <div class="sw-empty-state">
           <i class="bi bi-box-seam"></i>
-          <div>No se encontraron productos.</div>
+          <div>No products found.</div>
         </div>` : `
       <div class="table-responsive">
         <table class="table sw-table align-middle mb-0">
           <thead>
             <tr>
-              <th>SKU</th><th>Producto</th><th>Categoría</th><th>Proveedor</th>
-              <th>Costo unit.</th><th>Stock</th><th>EOQ</th><th>Clase</th><th class="text-end">Acciones</th>
+              <th>SKU</th><th>Product</th><th>Category</th><th>Supplier</th>
+              <th>Unit cost</th><th>Stock</th><th>EOQ</th><th>Class</th><th class="text-end">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -112,23 +113,27 @@ function paint(content) {
 
   content.querySelectorAll('[data-action="edit"]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const product = state.products.find((p) => p.id === btn.dataset.id);
+      // IDs coming from the DOM are always strings; product IDs from
+      // the real database are numbers — compare as strings so the
+      // lookup actually matches.
+      const product = state.products.find((p) => String(p.id) === String(btn.dataset.id));
       openProductModal(content, product);
     });
   });
 
   content.querySelectorAll('[data-action="delete"]').forEach((btn) => {
     btn.addEventListener('click', async () => {
-      const product = state.products.find((p) => p.id === btn.dataset.id);
-      const ok = await confirmDialog(`Se eliminará "${product.name}" del catálogo. Esta acción no se puede deshacer.`, 'Eliminar producto');
+      const product = state.products.find((p) => String(p.id) === String(btn.dataset.id));
+      if (!product) return;
+      const ok = await confirmDialog(`"${product.name}" and its related stock, movement, and purchase records will be permanently deleted. This cannot be undone.`, 'Delete product');
       if (!ok) return;
       try {
         await ProductService.remove(product.id);
-        showSuccess('Producto eliminado correctamente.');
+        showSuccess('Product deleted successfully.');
         await loadData();
         paint(content);
       } catch (error) {
-        showError(error.message || 'No se pudo eliminar el producto.');
+        showError(error.message || 'Could not delete the product.');
       }
     });
   });
@@ -140,27 +145,34 @@ function openProductModal(content, product) {
   const warehouseOptions = state.warehouses.map((w) => ({ value: w.id, label: w.name }));
   const categoryOptions = state.categories.map((c) => ({ value: c.id, label: c.name }));
 
-  // Bodega/stock inicial: si el producto ya tiene inventario registrado
-  // en alguna bodega, se preselecciona la primera para editarla.
+  // Initial warehouse/stock: if the product already has inventory in
+  // some warehouse, preselect the first one for editing.
   const primaryStock = product?.stockByWarehouse?.[0];
 
   openFormModal({
-    title: isEdit ? 'Editar producto' : 'Nuevo producto',
-    submitLabel: isEdit ? 'Guardar cambios' : 'Crear producto',
+    title: isEdit ? 'Edit product' : 'New product',
+    submitLabel: isEdit ? 'Save changes' : 'Create product',
     initialValues: product
       ? { ...product, warehouseId: primaryStock?.warehouseId, currentStock: primaryStock?.quantity ?? 0 }
-      : { holdingCostRate: 0.2, currentStock: 0, leadTimeDays: 5 },
+      : {
+          // Default holding cost comes from Settings, set freely by
+          // the administrator/client as a whole number. Used as-is,
+          // with no conversion.
+          holdingCost: SettingsService.get().defaultHoldingCost,
+          currentStock: 0,
+          leadTimeDays: 5,
+        },
     fields: [
-      { name: 'name', label: 'Nombre del producto', required: true, colClass: 'col-6' },
-      { name: 'categoryId', label: 'Categoría', type: 'select', required: true, options: categoryOptions, colClass: 'col-6' },
-      { name: 'supplierId', label: 'Proveedor', type: 'select', required: true, options: supplierOptions, colClass: 'col-6' },
-      { name: 'leadTimeDays', label: 'Lead time del proveedor (días)', type: 'number', min: 1, step: '1', required: true, colClass: 'col-6' },
-      { name: 'unitCost', label: 'Costo unitario (COP)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
-      { name: 'annualDemand', label: 'Demanda anual estimada (un.)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
-      { name: 'orderingCost', label: 'Costo de ordenar un pedido (COP)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
-      { name: 'holdingCostRate', label: 'Tasa de almacenamiento anual (0-1)', type: 'number', min: 0, step: '0.01', required: true, colClass: 'col-6' },
-      { name: 'warehouseId', label: 'Bodega (stock inicial/actual)', type: 'select', required: true, options: warehouseOptions, colClass: 'col-6' },
-      { name: 'currentStock', label: 'Stock en esa bodega (un.)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
+      { name: 'name', label: 'Product name', required: true, colClass: 'col-6' },
+      { name: 'categoryId', label: 'Category', type: 'select', required: true, options: categoryOptions, colClass: 'col-6' },
+      { name: 'supplierId', label: 'Supplier', type: 'select', required: true, options: supplierOptions, colClass: 'col-6' },
+      { name: 'leadTimeDays', label: 'Supplier lead time (days)', type: 'number', min: 1, step: '1', required: true, colClass: 'col-6' },
+      { name: 'unitCost', label: 'Unit cost (COP)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
+      { name: 'annualDemand', label: 'Estimated annual demand (un.)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
+      { name: 'orderingCost', label: 'Cost of placing an order (COP)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
+      { name: 'holdingCost', label: 'Holding cost (per unit/year)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
+      { name: 'warehouseId', label: 'Warehouse (initial/current stock)', type: 'select', required: true, options: warehouseOptions, colClass: 'col-6' },
+      { name: 'currentStock', label: 'Stock in that warehouse (un.)', type: 'number', min: 0, step: '1', required: true, colClass: 'col-6' },
     ],
     onSubmit: async (values) => {
       const { valid, errors } = validateForm(values, {
@@ -172,7 +184,7 @@ function openProductModal(content, product) {
         unitCost: [validators.required, validators.positiveNumber],
         annualDemand: [validators.required, validators.nonNegativeNumber],
         orderingCost: [validators.required, validators.positiveNumber],
-        holdingCostRate: [validators.required, validators.positiveNumber],
+        holdingCost: [validators.required, validators.integer, validators.nonNegativeNumber],
       });
       if (!valid) throw new Error(Object.values(errors)[0]);
 
@@ -184,7 +196,7 @@ function openProductModal(content, product) {
         unitCost: Number(values.unitCost),
         annualDemand: Number(values.annualDemand),
         orderingCost: Number(values.orderingCost),
-        holdingCostRate: Number(values.holdingCostRate),
+        holdingCost: Number(values.holdingCost),
         warehouseId: values.warehouseId,
         currentStock: Number(values.currentStock),
         stockByWarehouse: product?.stockByWarehouse || [],
@@ -192,10 +204,10 @@ function openProductModal(content, product) {
 
       if (isEdit) {
         await ProductService.update(product.id, payload);
-        showSuccess('Producto actualizado correctamente.');
+        showSuccess('Product updated successfully.');
       } else {
         await ProductService.create(payload);
-        showSuccess('Producto creado correctamente.');
+        showSuccess('Product created successfully.');
       }
 
       await loadData();

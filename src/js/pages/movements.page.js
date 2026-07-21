@@ -1,6 +1,6 @@
 /**
  * movements.page.js
- * Registro de entradas/salidas de inventario e historial por producto.
+ * Inventory entries/exits log and per-product history.
  */
 import { renderLayout } from '../components/layout.js';
 import { ProductService } from '../services/product.service.js';
@@ -17,7 +17,7 @@ let movements = [];
 let filterProductId = '';
 
 export async function renderMovementsPage(container) {
-  const content = renderLayout(container, { title: 'Movimientos', activePath: '/movimientos' });
+  const content = renderLayout(container, { title: 'Movements', activePath: '/movements' });
   content.innerHTML = `<div class="sw-loading"><div class="spinner-border" style="color:var(--sw-accent);"></div></div>`;
   await loadData();
   paint(content);
@@ -30,52 +30,59 @@ async function loadData() {
 }
 
 function getProduct(id) {
-  return products.find((p) => p.id === id);
+  return products.find((p) => String(p.id) === String(id));
+}
+
+function getWarehouseName(id) {
+  return warehouses.find((w) => String(w.id) === String(id))?.name || '—';
 }
 
 function filteredMovements() {
-  const list = filterProductId ? movements.filter((m) => m.productId === filterProductId) : movements;
+  const list = filterProductId
+    ? movements.filter((m) => String(m.productId) === String(filterProductId))
+    : movements;
   return [...list].sort((a, b) => new Date(b.date) - new Date(a.date));
 }
 
 function paint(content) {
   const list = filteredMovements();
-  const productOptions = products.map((p) => `<option value="${p.id}" ${filterProductId === p.id ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
+  const productOptions = products.map((p) => `<option value="${p.id}" ${String(filterProductId) === String(p.id) ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('');
 
   content.innerHTML = `
     <div class="sw-page-header">
       <div>
-        <div class="sw-page-title">Movimientos de inventario</div>
-        <div class="sw-page-subtitle">Historial de entradas y salidas por producto.</div>
+        <div class="sw-page-title">Inventory movements</div>
+        <div class="sw-page-subtitle">Entry and exit history per product.</div>
       </div>
-      <button class="btn sw-btn-accent" id="btn-new-movement"><i class="bi bi-plus-lg me-1"></i>Registrar movimiento</button>
+      <button class="btn sw-btn-accent" id="btn-new-movement"><i class="bi bi-plus-lg me-1"></i>Log movement</button>
     </div>
 
     <div class="sw-card p-3 p-lg-4">
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div style="max-width:320px;" class="w-100">
           <select class="form-select" id="movement-filter">
-            <option value="">Todos los productos</option>
+            <option value="">All products</option>
             ${productOptions}
           </select>
         </div>
-        <div class="small text-secondary">${list.length} movimiento(s)</div>
+        <div class="small text-secondary">${list.length} movement(s)</div>
       </div>
 
       ${list.length === 0 ? `
-        <div class="sw-empty-state"><i class="bi bi-arrow-left-right"></i><div>No hay movimientos registrados para este filtro.</div></div>` : `
+        <div class="sw-empty-state"><i class="bi bi-arrow-left-right"></i><div>No movements match this filter.</div></div>` : `
       <div class="table-responsive">
         <table class="table sw-table align-middle mb-0">
-          <thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Nota</th></tr></thead>
+          <thead><tr><th>Date</th><th>Product</th><th>Warehouse</th><th>Type</th><th>Quantity</th><th>Note</th></tr></thead>
           <tbody>
             ${list.map((m) => {
               const product = getProduct(m.productId);
-              const isEntry = m.type === 'entrada';
+              const isEntry = m.type === 'in';
               return `
               <tr>
                 <td class="text-secondary">${formatDateTime(m.date)}</td>
-                <td class="fw-semibold">${escapeHtml(product?.name || 'Producto eliminado')}</td>
-                <td><span class="badge ${isEntry ? 'text-bg-success' : 'text-bg-danger'} bg-opacity-75">${isEntry ? 'Entrada' : 'Salida'}</span></td>
+                <td class="fw-semibold">${escapeHtml(product?.name || 'Deleted product')}</td>
+                <td>${escapeHtml(getWarehouseName(m.warehouseId))}</td>
+                <td><span class="badge ${isEntry ? 'text-bg-success' : 'text-bg-danger'} bg-opacity-75">${isEntry ? 'Entry' : 'Exit'}</span></td>
                 <td>${m.quantity} un.</td>
                 <td class="text-secondary">${escapeHtml(m.note || '—')}</td>
               </tr>`;
@@ -93,27 +100,25 @@ function paint(content) {
 }
 
 function openMovementModal(content) {
-  const productOptions = products.map((p) => ({ value: p.id, label: `${p.name} (stock total: ${p.currentStock})` }));
+  const productOptions = products.map((p) => ({ value: p.id, label: `${p.name} (total stock: ${p.currentStock})` }));
   const warehouseOptions = warehouses.map((w) => ({ value: w.id, label: w.name }));
 
   openFormModal({
-    title: 'Registrar movimiento',
-    submitLabel: 'Registrar',
-    initialValues: { type: 'entrada' },
+    title: 'Log movement',
+    submitLabel: 'Log',
+    initialValues: { type: 'in' },
     fields: [
-      { name: 'productId', label: 'Producto', type: 'select', required: true, options: productOptions },
-      // La bodega es obligatoria: la BD guarda el stock por bodega, no
-      // un total único por producto.
-      { name: 'warehouseId', label: 'Bodega', type: 'select', required: true, options: warehouseOptions },
+      { name: 'productId', label: 'Product', type: 'select', required: true, options: productOptions },
+      // Warehouse is required: the database tracks stock per
+      // warehouse, not a single total per product.
+      { name: 'warehouseId', label: 'Warehouse', type: 'select', required: true, options: warehouseOptions },
       {
-        name: 'type', label: 'Tipo de movimiento', type: 'select', required: true,
-        options: [{ value: 'entrada', label: 'Entrada' }, { value: 'salida', label: 'Salida' }],
+        name: 'type', label: 'Movement type', type: 'select', required: true,
+        options: [{ value: 'in', label: 'Entry' }, { value: 'out', label: 'Exit' }],
         colClass: 'col-6',
       },
-      { name: 'quantity', label: 'Cantidad', type: 'number', min: 1, step: '1', required: true, colClass: 'col-6' },
-      // Nota: por ahora este campo no se guarda en el backend (la tabla
-      // `movements` no tiene columna para esto todavía).
-      { name: 'note', label: 'Nota (opcional, no se guarda aún)', type: 'textarea' },
+      { name: 'quantity', label: 'Quantity', type: 'number', min: 1, step: '1', required: true, colClass: 'col-6' },
+      { name: 'note', label: 'Note (optional)', type: 'textarea' },
     ],
     onSubmit: async (values) => {
       const { valid, errors } = validateForm(values, {
@@ -130,12 +135,13 @@ function openMovementModal(content) {
           warehouseId: values.warehouseId,
           type: values.type,
           quantity: Number(values.quantity),
+          note: values.note?.trim() || '',
         });
       } catch (error) {
         throw new Error(error.message);
       }
 
-      showSuccess('Movimiento registrado correctamente.');
+      showSuccess('Movement logged successfully.');
       await loadData();
       paint(content);
     },

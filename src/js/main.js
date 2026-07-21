@@ -18,21 +18,21 @@ import { renderReportsPage } from './pages/reports.page.js';
 import { renderSettingsPage } from './pages/settings.page.js';
 import { renderNotFoundPage } from './pages/notfound.page.js';
 
-// Rutas públicas
+// Public routes
 addRoute('/', async () => navigateTo(isAuthenticated() ? '/dashboard' : '/login'));
 addRoute('/login', renderLoginPage);
 addRoute('/register', renderRegisterPage);
 
-// Rutas privadas
+// Private routes
 addRoute('/dashboard', renderDashboardPage, { private: true });
-addRoute('/productos', renderProductsPage, { private: true });
-addRoute('/proveedores', renderSuppliersPage, { private: true });
-addRoute('/bodegas', renderWarehousesPage, { private: true });
-addRoute('/movimientos', renderMovementsPage, { private: true });
-addRoute('/semaforo', renderSemaphorePage, { private: true });
-addRoute('/compras', renderPurchasesPage, { private: true });
-addRoute('/reportes', renderReportsPage, { private: true });
-addRoute('/configuracion', renderSettingsPage, { private: true });
+addRoute('/products', renderProductsPage, { private: true });
+addRoute('/suppliers', renderSuppliersPage, { private: true });
+addRoute('/warehouses', renderWarehousesPage, { private: true });
+addRoute('/movements', renderMovementsPage, { private: true });
+addRoute('/semaphore', renderSemaphorePage, { private: true });
+addRoute('/purchases', renderPurchasesPage, { private: true });
+addRoute('/reports', renderReportsPage, { private: true });
+addRoute('/settings', renderSettingsPage, { private: true });
 
 setNotFound(renderNotFoundPage);
 

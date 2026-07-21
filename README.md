@@ -1,94 +1,94 @@
 # JACKS STOCKS — Frontend
 
-Frontend del Proyecto Integrador **CodeUp RIWI: Beyond Limits**.
-Sistema de gestión de inventario para pymes que calcula automáticamente
-**EOQ** (cantidad económica de pedido), **clasificación ABC** y
-**punto de reorden (ROP)** con semáforo de criticidad.
+Frontend for the **CodeUp RIWI: Beyond Limits** capstone project.
+Inventory management system for SMBs that automatically calculates
+**EOQ** (Economic Order Quantity), **ABC classification**, and
+**Reorder Point (ROP)** with a criticality semaphore.
 
-Este repositorio contiene **únicamente el Frontend**. El Backend
-(Express.js) es responsabilidad de otro integrante del equipo y se
-integrará consumiendo la misma capa de servicios (`src/js/services`).
+This repository contains **only the frontend**. The backend
+(Express.js) is another team member's responsibility and integrates
+by consuming the same service layer (`src/js/services`).
 
 ## Stack
 
 - HTML5 + CSS3
 - Bootstrap 5 + Bootstrap Icons
-- JavaScript Vanilla (ES Modules) — sin frameworks
-- SPA con router basado en hash (`#/ruta`)
+- Vanilla JavaScript (ES Modules) — no frameworks
+- Hash-based SPA router (`#/route`)
 
-## Cómo ejecutar
+## How to run
 
-No requiere build ni instalación de dependencias. Debe servirse como
-sitio estático (los ES Modules no funcionan con `file://`):
+No build step or dependency installation required. Must be served as
+a static site (ES Modules don't work with `file://`):
 
 ```bash
-# Con Python
+# With Python
 python3 -m http.server 5500
 
-# O con la extensión "Live Server" de VS Code
+# Or with the "Live Server" VS Code extension
 ```
 
-Luego abre `http://localhost:5500`.
+Then open `http://localhost:5500`.
 
-## Backend requerido
+## Backend required
 
-Esta app **necesita el backend Express corriendo** para funcionar — ya
-no tiene un modo de datos de prueba integrado. Antes de usarla:
+This app **needs the Express backend running** to work — it no
+longer has a built-in test-data mode. Before using it:
 
-1. Levanta el backend (`npm run dev` en `PROJECT-JACKS-STOCK-BACKEND`,
-   ver su propio README).
-2. Confirma que `src/js/services/api.js` apunte a la URL correcta:
+1. Start the backend (`npm run dev` in `PROJECT-JACKS-STOCK-BACKEND`,
+   see its own README).
+2. Confirm `src/js/services/api.js` points to the right URL:
 
 ```js
 export const API_CONFIG = {
-  BASE_URL: 'http://localhost:6543', // ajustar a la URL real del backend
+  BASE_URL: 'http://localhost:6543', // adjust to the real backend URL
 };
 ```
 
-3. Crea una cuenta desde la pantalla de **Registro** — los usuarios de
-   ejemplo del script SQL tienen una contraseña de relleno (no un hash
-   real), así que no van a poder iniciar sesión.
+3. Create an account from the **Register** screen — the sample users
+   from the SQL script have a placeholder password (not a real hash),
+   so they won't be able to log in.
 
-`api.js` envía el token de sesión (`Authorization: Bearer`), desenvuelve
-la respuesta `{ success, message, data }` del backend, y maneja
-errores 401 redirigiendo a `/login`.
+`api.js` sends the session token (`Authorization: Bearer`), unwraps
+the backend's `{ success, message, data }` response, and handles
+401 errors by redirecting to `/login`.
 
-El backend Express expone estos endpoints:
+The Express backend exposes these endpoints:
 
-| Recurso     | Endpoints                                                        |
+| Resource    | Endpoints                                                        |
 |-------------|-------------------------------------------------------------------|
 | Auth        | `POST /users/login`, `POST /users/register`                      |
-| Categorías  | `GET/POST /categories`, `GET/PUT/DELETE /categories/:id`         |
-| Productos   | `GET/POST /products`, `GET/PUT/DELETE /products/:id`             |
-| Proveedores | `GET/POST /suppliers`, `GET/PUT/DELETE /suppliers/:id`           |
-| Bodegas     | `GET/POST /warehouses`, `GET/PUT/DELETE /warehouses/:id`, `GET /warehouses/capacity` |
-| Inventario  | `GET /inventory`, `GET /inventory/product/:product_id`, `POST/PUT/DELETE /inventory/:id` |
-| Movimientos | `GET /movements`, `GET /movements/product/:product_id`, `POST /movements` |
-| Compras     | `GET/POST /purchases`, `PATCH /purchases/:id/status`, `GET /purchases/supplier/:supplier_id` |
-| Detalle compra | `GET/POST /purchase-details`, `GET /purchase-details/purchase/:purchase_id` |
-| Reportes    | `GET /reports/eoq`, `GET /reports/movements-summary`, `GET /reports/stock-by-product` |
+| Categories  | `GET/POST /categories`, `GET/PUT/DELETE /categories/:id`         |
+| Products    | `GET/POST /products`, `GET/PUT/DELETE /products/:id`             |
+| Suppliers   | `GET/POST /suppliers`, `GET/PUT/DELETE /suppliers/:id`           |
+| Warehouses  | `GET/POST /warehouses`, `GET/PUT/DELETE /warehouses/:id`, `GET /warehouses/capacity` |
+| Inventory   | `GET /inventory`, `GET /inventory/product/:product_id`, `POST/PUT/DELETE /inventory/:id` |
+| Movements   | `GET /movements`, `GET /movements/product/:product_id`, `POST /movements` |
+| Purchases   | `GET/POST /purchases`, `PATCH /purchases/:id/status`, `GET /purchases/supplier/:supplier_id` |
+| Purchase details | `GET/POST /purchase-details`, `GET /purchase-details/purchase/:purchase_id` |
+| Reports     | `GET /reports/eoq`, `GET /reports/movements-summary`, `GET /reports/stock-by-product` |
 
-## Estructura del proyecto
+## Project structure
 
 ```
 src/
   assets/
-    css/main.css        # Design tokens y estilos del sistema
+    css/main.css        # Design tokens and system styles
     img/
   js/
     core/
-      router.js          # Router hash con rutas privadas y 404
-      session.js          # Persistencia de sesión (localStorage)
+      router.js          # Hash router with private routes and 404
+      session.js          # Session persistence (localStorage)
     components/
-      layout.js            # Shell: sidebar + navbar + contenido
+      layout.js            # Shell: sidebar + navbar + content
       sidebar.js
       navbar.js
-      form-modal.js         # Modal de formulario reutilizable (CRUD)
-      confirm-dialog.js       # Modal de confirmación
-      toast.js                # Notificaciones
-      badges.js                # Badges ABC / semáforo
+      form-modal.js         # Reusable form modal (CRUD)
+      confirm-dialog.js       # Confirmation modal
+      toast.js                # Notifications
+      badges.js                # ABC / semaphore badges
     services/
-      api.js                    # Cliente HTTP central
+      api.js                    # Central HTTP client
       auth.service.js
       product.service.js
       supplier.service.js
@@ -97,7 +97,7 @@ src/
       purchase.service.js
       settings.service.js
     utils/
-      inventory-calc.js          # Lógica de negocio: EOQ, ROP, ABC
+      inventory-calc.js          # Business logic: EOQ, ROP, ABC
       validators.js
       format.js
     pages/
@@ -107,23 +107,23 @@ src/
       movements.page.js / semaphore.page.js / purchases.page.js
       reports.page.js / settings.page.js
       notfound.page.js
-    main.js                      # Registro de rutas y arranque
+    main.js                      # Route registration and bootstrap
 index.html
 ```
 
-## Lógica de negocio implementada
+## Implemented business logic
 
 - **EOQ** = √(2·D·S / H) — `utils/inventory-calc.js`
-- **ROP** = demanda diaria × lead time del proveedor + stock de seguridad
-- **Clasificación ABC** por regla de Pareto sobre el valor de consumo anual
-  (A = 80% del valor, B = siguiente 15%, C = 5% restante)
-- **Semáforo de criticidad**: rojo (comprar ya), amarillo (vigilar), verde
-  (saludable), según stock actual frente al ROP
-- Registrar una **entrada/salida** actualiza el stock del producto
-- Marcar una **orden de compra como recibida** genera automáticamente los
-  movimientos de entrada correspondientes
+- **ROP** = daily demand × supplier lead time + safety stock
+- **ABC classification** using the Pareto rule on annual consumption value
+  (A = 80% of value, B = next 15%, C = remaining 5%)
+- **Criticality semaphore**: red (buy now), yellow (watch), green
+  (healthy), based on current stock vs. ROP
+- Logging an **entry/exit** updates the product's stock
+- Marking a **purchase order as received** automatically generates the
+  corresponding entry movements
 
-## Roadmap (fuera de alcance del MVP)
+## Roadmap (out of MVP scope)
 
-- Exportar reportes a PDF/Excel (v2)
-- Sugerencia automática de orden de compra (v2)
+- Export reports to PDF/Excel (v2)
+- Automatic purchase order suggestions (v2)

@@ -1,6 +1,6 @@
 /**
  * toast.js
- * Notificaciones tipo toast (éxito, error, info) usando Bootstrap Toasts.
+ * Toast notifications (success, error, info) using Bootstrap Toasts.
  */
 
 const ICONS = {
@@ -11,7 +11,7 @@ const ICONS = {
 };
 
 /**
- * Muestra una notificación toast.
+ * Shows a toast notification.
  * @param {string} message
  * @param {'success'|'error'|'info'|'warning'} type
  */
@@ -31,7 +31,7 @@ export function showToast(message, type = 'success') {
         <i class="bi ${ICONS[type] || ICONS.info}"></i>
         <span>${message}</span>
       </div>
-      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>`;
 
   container.appendChild(toastEl);

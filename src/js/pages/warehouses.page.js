@@ -1,5 +1,5 @@
 /**
- * warehouses.page.js — CRUD de bodegas.
+ * warehouses.page.js — Warehouse CRUD.
  */
 import { renderLayout } from '../components/layout.js';
 import { WarehouseService } from '../services/warehouse.service.js';
@@ -13,7 +13,7 @@ let warehouses = [];
 let capacity = [];
 
 export async function renderWarehousesPage(container) {
-  const content = renderLayout(container, { title: 'Bodegas', activePath: '/bodegas' });
+  const content = renderLayout(container, { title: 'Warehouses', activePath: '/warehouses' });
   content.innerHTML = `<div class="sw-loading"><div class="spinner-border" style="color:var(--sw-accent);"></div></div>`;
   await loadData();
   paint(content);
@@ -31,15 +31,15 @@ function paint(content) {
   content.innerHTML = `
     <div class="sw-page-header">
       <div>
-        <div class="sw-page-title">Bodegas</div>
-        <div class="sw-page-subtitle">Ubicaciones físicas donde se almacena el inventario.</div>
+        <div class="sw-page-title">Warehouses</div>
+        <div class="sw-page-subtitle">Physical locations where inventory is stored.</div>
       </div>
-      <button class="btn sw-btn-accent" id="btn-new-warehouse"><i class="bi bi-plus-lg me-1"></i>Nueva bodega</button>
+      <button class="btn sw-btn-accent" id="btn-new-warehouse"><i class="bi bi-plus-lg me-1"></i>New warehouse</button>
     </div>
 
     <div class="row g-3">
       ${warehouses.length === 0 ? `
-        <div class="col-12"><div class="sw-card p-4 sw-empty-state"><i class="bi bi-building"></i><div>No hay bodegas registradas.</div></div></div>` :
+        <div class="col-12"><div class="sw-card p-4 sw-empty-state"><i class="bi bi-building"></i><div>No warehouses registered yet.</div></div></div>` :
         warehouses.map((w) => {
           const info = getCapacityInfo(w.id);
           return `
@@ -56,10 +56,10 @@ function paint(content) {
             <div class="text-secondary small mb-2"><i class="bi bi-geo-alt me-1"></i>${escapeHtml(w.location)}</div>
             ${info && info.totalCapacity != null ? `
               <div class="small text-secondary d-flex justify-content-between">
-                <span>Espacio disponible</span>
+                <span>Available space</span>
                 <span class="fw-semibold ${info.remainingCapacity < 0 ? 'text-danger' : ''}">${info.remainingCapacity} / ${info.totalCapacity} un.</span>
               </div>` : `
-              <div class="small text-secondary">Sin capacidad máxima definida.</div>`}
+              <div class="small text-secondary">No maximum capacity set.</div>`}
           </div>
         </div>`;
         }).join('')}
@@ -68,21 +68,22 @@ function paint(content) {
   content.querySelector('#btn-new-warehouse').addEventListener('click', () => openWarehouseModal(content));
 
   content.querySelectorAll('[data-action="edit"]').forEach((btn) => {
-    btn.addEventListener('click', () => openWarehouseModal(content, warehouses.find((w) => w.id === btn.dataset.id)));
+    btn.addEventListener('click', () => openWarehouseModal(content, warehouses.find((w) => String(w.id) === String(btn.dataset.id))));
   });
 
   content.querySelectorAll('[data-action="delete"]').forEach((btn) => {
     btn.addEventListener('click', async () => {
-      const warehouse = warehouses.find((w) => w.id === btn.dataset.id);
-      const ok = await confirmDialog(`Se eliminará la bodega "${warehouse.name}".`, 'Eliminar bodega');
+      const warehouse = warehouses.find((w) => String(w.id) === String(btn.dataset.id));
+      if (!warehouse) return;
+      const ok = await confirmDialog(`Warehouse "${warehouse.name}" and its related stock and movement records will be permanently deleted.`, 'Delete warehouse');
       if (!ok) return;
       try {
         await WarehouseService.remove(warehouse.id);
-        showSuccess('Bodega eliminada correctamente.');
+        showSuccess('Warehouse deleted successfully.');
         await loadData();
         paint(content);
       } catch (error) {
-        showError(error.message || 'No se pudo eliminar la bodega.');
+        showError(error.message || 'Could not delete the warehouse.');
       }
     });
   });
@@ -91,13 +92,13 @@ function paint(content) {
 function openWarehouseModal(content, warehouse) {
   const isEdit = Boolean(warehouse);
   openFormModal({
-    title: isEdit ? 'Editar bodega' : 'Nueva bodega',
-    submitLabel: isEdit ? 'Guardar cambios' : 'Crear bodega',
+    title: isEdit ? 'Edit warehouse' : 'New warehouse',
+    submitLabel: isEdit ? 'Save changes' : 'Create warehouse',
     initialValues: warehouse || {},
     fields: [
-      { name: 'name', label: 'Nombre de la bodega', required: true },
-      { name: 'location', label: 'Ubicación', required: true },
-      { name: 'capacity', label: 'Capacidad máxima (un.)', type: 'number', min: 0, step: '1', required: true },
+      { name: 'name', label: 'Warehouse name', required: true },
+      { name: 'location', label: 'Location', required: true },
+      { name: 'capacity', label: 'Maximum capacity (un.)', type: 'number', min: 0, step: '1', required: true },
     ],
     onSubmit: async (values) => {
       const { valid, errors } = validateForm(values, {
@@ -111,10 +112,10 @@ function openWarehouseModal(content, warehouse) {
 
       if (isEdit) {
         await WarehouseService.update(warehouse.id, payload);
-        showSuccess('Bodega actualizada correctamente.');
+        showSuccess('Warehouse updated successfully.');
       } else {
         await WarehouseService.create(payload);
-        showSuccess('Bodega creada correctamente.');
+        showSuccess('Warehouse created successfully.');
       }
       await loadData();
       paint(content);

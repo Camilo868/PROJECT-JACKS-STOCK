@@ -1,11 +1,11 @@
 /**
  * badges.js
- * Helpers de render para los badges de clasificación ABC y semáforo.
+ * Render helpers for ABC classification and semaphore badges.
  */
 
 export function renderAbcBadge(cls) {
   const map = { A: 'sw-badge-a', B: 'sw-badge-b', C: 'sw-badge-c' };
-  return `<span class="sw-badge ${map[cls] || 'sw-badge-c'}">Clase ${cls}</span>`;
+  return `<span class="sw-badge ${map[cls] || 'sw-badge-c'}">Class ${cls}</span>`;
 }
 
 export function renderSemaphoreBadge(status, label) {

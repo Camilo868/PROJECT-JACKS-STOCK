@@ -1,11 +1,13 @@
 /**
  * settings.service.js
- * Preferencias locales de la aplicación (no requieren backend).
+ * Local application preferences (no backend required).
  */
 const KEY = 'stockwise_settings';
 
 const DEFAULTS = {
-  defaultHoldingCostRate: 0.2,
+  // Whole number set freely by the administrator/client. Used as-is
+  // (no % framing, no conversion) to pre-fill new products.
+  defaultHoldingCost: 20,
   lowStockNotifications: true,
   currency: 'COP',
 };

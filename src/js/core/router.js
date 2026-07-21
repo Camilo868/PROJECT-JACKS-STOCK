@@ -1,7 +1,7 @@
 /**
  * router.js
- * Router SPA basado en hash (#/ruta). Soporta rutas privadas,
- * parámetros dinámicos (:id) y página 404.
+ * Hash-based SPA router (#/route). Supports private routes,
+ * dynamic parameters (:id) and a 404 page.
  */
 
 import { isAuthenticated } from './session.js';
@@ -13,7 +13,7 @@ const APP_ROOT_ID = 'app';
 
 /**
  * Registra una ruta.
- * @param {string} path - Ej: '/', '/productos', '/productos/:id'
+ * @param {string} path - E.g.: '/', '/products', '/products/:id'
  * @param {Function} handler - Recibe (container, params)
  * @param {{ private?: boolean }} options
  */
@@ -62,7 +62,7 @@ function getContainer() {
   return document.getElementById(APP_ROOT_ID);
 }
 
-/** Navega programáticamente a una ruta. */
+/** Programmatically navigates to a route. */
 export function navigateTo(path) {
   window.location.hash = path.startsWith('#') ? path.slice(1) : path;
 }

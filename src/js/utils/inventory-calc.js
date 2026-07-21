@@ -1,26 +1,27 @@
 /**
  * inventory-calc.js
- * Lógica de negocio central del sistema: EOQ, ROP, clasificación ABC
- * y semáforo de criticidad. Funciones puras, sin dependencias del DOM,
- * para que puedan probarse de forma aislada.
+ * Core business logic: EOQ, ROP, ABC classification and criticality
+ * semaphore. Pure functions with no DOM dependencies, so they can be
+ * tested in isolation.
  */
 
 const DAYS_PER_YEAR = 365;
 
 /**
- * Costo de mantener 1 unidad en inventario durante un año.
- * H = costo unitario * tasa de almacenamiento (%anual)
+ * Cost of holding 1 unit in inventory for a year.
+ * Set directly by the administrator (any whole number) — no longer
+ * a percentage of unit cost.
  */
 export function getHoldingCostPerUnit(product) {
-  return product.unitCost * product.holdingCostRate;
+  return product.holdingCost;
 }
 
 /**
- * Cantidad Económica de Pedido (EOQ).
- * EOQ = raíz( (2 * D * S) / H )
- *   D = demanda anual
- *   S = costo de ordenar un pedido
- *   H = costo de almacenamiento por unidad/año
+ * Economic Order Quantity (EOQ).
+ * EOQ = sqrt( (2 * D * S) / H )
+ *   D = annual demand
+ *   S = cost of placing one order
+ *   H = holding cost per unit/year
  */
 export function calculateEOQ(product) {
   const H = getHoldingCostPerUnit(product);
@@ -29,14 +30,14 @@ export function calculateEOQ(product) {
   return Math.round(eoq);
 }
 
-/** Demanda diaria promedio. */
+/** Average daily demand. */
 export function calculateDailyDemand(product) {
   return product.annualDemand / DAYS_PER_YEAR;
 }
 
 /**
- * Punto de Reorden (ROP).
- * ROP = (demanda diaria * lead time del proveedor en días) + stock de seguridad
+ * Reorder Point (ROP).
+ * ROP = (daily demand * supplier lead time in days) + safety stock
  */
 export function calculateROP(product, leadTimeDays) {
   const dailyDemand = calculateDailyDemand(product);
@@ -44,8 +45,8 @@ export function calculateROP(product, leadTimeDays) {
 }
 
 /**
- * Número estimado de pedidos por año y tiempo entre pedidos (días),
- * útil para mostrar contexto junto al EOQ.
+ * Estimated orders per year and days between orders, useful as
+ * context alongside the EOQ.
  */
 export function calculateOrderCycle(product) {
   const eoq = calculateEOQ(product);
@@ -58,10 +59,10 @@ export function calculateOrderCycle(product) {
 }
 
 /**
- * Estado de semáforo según stock actual frente al ROP.
- *  - red    -> stock crítico, comprar ya
- *  - yellow -> stock por debajo del ROP, planear compra
- *  - green  -> stock saludable
+ * Semaphore status based on current stock vs. ROP.
+ *  - red    -> critical stock, buy now
+ *  - yellow -> below ROP, plan a purchase
+ *  - green  -> healthy stock
  */
 export function getSemaphoreStatus(product, rop) {
   if (product.currentStock <= 0) return 'red';
@@ -71,16 +72,16 @@ export function getSemaphoreStatus(product, rop) {
 }
 
 export const SEMAPHORE_LABEL = {
-  red: 'Comprar ahora',
-  yellow: 'Vigilar',
-  green: 'Saludable',
+  red: 'Buy now',
+  yellow: 'Watch',
+  green: 'Healthy',
 };
 
 /**
- * Clasificación ABC por valor de consumo anual (regla de Pareto).
- * A -> hasta el 80% del valor acumulado
- * B -> del 80% al 95%
- * C -> resto
+ * ABC classification by annual consumption value (Pareto rule).
+ * A -> up to 80% of cumulative value
+ * B -> 80% to 95%
+ * C -> the rest
  * @param {Array} products
  * @returns {Map<string, { class: 'A'|'B'|'C', value: number, percentOfTotal: number, cumulativePercent: number }>}
  */
@@ -116,7 +117,7 @@ export function classifyABC(products) {
 }
 
 export const REVIEW_FREQUENCY_LABEL = {
-  A: 'Revisión diaria',
-  B: 'Revisión semanal',
-  C: 'Revisión quincenal',
+  A: 'Daily review',
+  B: 'Weekly review',
+  C: 'Biweekly review',
 };

@@ -1,6 +1,6 @@
 /**
  * confirm-dialog.js
- * Modal de confirmación reutilizable (ej. antes de eliminar un registro).
+ * Reusable confirmation modal (e.g. before deleting a record).
  */
 
 let dialogEl = null;
@@ -18,11 +18,11 @@ function ensureDialog() {
           <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-danger-subtle" style="width:56px;height:56px;">
             <i class="bi bi-exclamation-triangle-fill text-danger fs-4"></i>
           </div>
-          <h5 class="confirm-title mb-2">¿Confirmar acción?</h5>
+          <h5 class="confirm-title mb-2">Confirm action?</h5>
           <p class="confirm-message text-secondary mb-4"></p>
           <div class="d-flex justify-content-center gap-2">
-            <button type="button" class="btn btn-light px-4" data-action="cancel">Cancelar</button>
-            <button type="button" class="btn btn-danger px-4" data-action="confirm">Sí, continuar</button>
+            <button type="button" class="btn btn-light px-4" data-action="cancel">Cancel</button>
+            <button type="button" class="btn btn-danger px-4" data-action="confirm">Yes, continue</button>
           </div>
         </div>
       </div>
@@ -32,12 +32,12 @@ function ensureDialog() {
 }
 
 /**
- * Muestra un modal de confirmación y resuelve con true/false.
+ * Shows a confirmation modal and resolves with true/false.
  * @param {string} message
  * @param {string} [title]
  * @returns {Promise<boolean>}
  */
-export function confirmDialog(message, title = '¿Confirmar acción?') {
+export function confirmDialog(message, title = 'Confirm action?') {
   const el = ensureDialog();
   el.querySelector('.confirm-title').textContent = title;
   el.querySelector('.confirm-message').textContent = message;

@@ -1,9 +1,9 @@
 /**
  * format.js
- * Utilidades de formato para moneda, números y fechas.
+ * Formatting utilities for currency, numbers and dates.
  */
 
-const currencyFormatter = new Intl.NumberFormat('es-CO', {
+const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'COP',
   maximumFractionDigits: 0,
@@ -14,19 +14,19 @@ export function formatCurrency(value) {
 }
 
 export function formatNumber(value) {
-  return new Intl.NumberFormat('es-CO').format(Number(value) || 0);
+  return new Intl.NumberFormat('en-US').format(Number(value) || 0);
 }
 
 export function formatDate(isoString) {
   if (!isoString) return '—';
   const date = new Date(isoString);
-  return new Intl.DateTimeFormat('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+  return new Intl.DateTimeFormat('en-US', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
 }
 
 export function formatDateTime(isoString) {
   if (!isoString) return '—';
   const date = new Date(isoString);
-  return new Intl.DateTimeFormat('es-CO', {
+  return new Intl.DateTimeFormat('en-US', {
     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   }).format(date);
 }

@@ -1,40 +1,41 @@
 /**
- * product.service.js — Catálogo de productos.
+ * product.service.js — Product catalog.
  *
- * ¿POR QUÉ ESTE ARCHIVO ES MÁS LARGO QUE ANTES?
- * La tabla `products` de la base de datos real no tiene la misma forma
- * que usan las pantallas (products.page.js, semaphore.page.js, etc.).
- * Diferencias concretas:
+ * WHY IS THIS FILE LONGER THAN BEFORE?
+ * The real database's `products` table doesn't have the same shape
+ * the screens use (products.page.js, semaphore.page.js, etc.).
+ * Concrete differences:
  *
- *   - La BD no guarda "categoría" como texto, sino `category_id`
- *     (un número que apunta a la tabla `categories`).
- *   - La BD no guarda el stock dentro de products: vive en la tabla
- *     `inventory`, separada por bodega. Un producto puede tener stock
- *     en varias bodegas a la vez.
- *   - La BD no tiene columna `sku` ni `safety_stock`. Se generan/asumen
- *     acá mientras el equipo decide si se agregan esas columnas.
- *   - `holding_cost` en la BD es un valor absoluto (costo de guardar
- *     1 unidad al año, en pesos), mientras que las pantallas trabajan
- *     con una TASA (0 a 1). Se convierte en los dos sentidos.
- *   - `lead_time_days` vive en products (no en suppliers, como asumía
- *     el mock original) — cada producto puede tener un proveedor con
- *     un tiempo de entrega distinto.
+ *   - The DB doesn't store "category" as text, only `category_id`
+ *     (a number pointing to the `categories` table).
+ *   - The DB doesn't store stock inside products: it lives in the
+ *     `inventory` table, split per warehouse. A product can have
+ *     stock in several warehouses at once.
+ *   - The DB has no `sku` or `safety_stock` column. Generated/assumed
+ *     here until the team decides whether to add those columns.
+ *   - `holding_cost` in the DB is an absolute value (cost of storing
+ *     1 unit for a year, in the local currency), set directly by the
+ *     administrator. No conversion happens — the number they enter is
+ *     stored and read back as-is.
+ *   - `lead_time_days` lives on products (not on suppliers, as the
+ *     original mock assumed) — each product can have a different
+ *     lead time depending on its supplier.
  *
- * Este archivo hace de "traductor": las páginas siguen recibiendo el
- * mismo objeto "bonito" de antes (sku, category, unitCost,
- * holdingCostRate, currentStock...), pero por debajo habla con la BD
- * real usando sus nombres y tablas (category_id, unit_price,
- * holding_cost, inventory...).
+ * This file acts as a "translator": pages keep receiving the same
+ * "nice" object as before (sku, category, unitCost, holdingCost,
+ * currentStock...), while underneath it talks to the real DB using
+ * its own names and tables (category_id, unit_price, holding_cost,
+ * inventory...).
  */
 import { api } from './api.js';
 import { CategoryService } from './category.service.js';
 
-/** Genera un SKU de exhibición ya que la BD no guarda uno. */
+/** Generates a display SKU since the DB doesn't store one. */
 function fakeSku(id) {
   return `PRD-${String(id).padStart(4, '0')}`;
 }
 
-/** Convierte una fila cruda de `products` (BD) al objeto que usan las páginas. */
+/** Converts a raw `products` row (DB) into the object the pages use. */
 function fromDb(row, { categoryName = '—', stockByWarehouse = [] } = {}) {
   const totalStock = stockByWarehouse.reduce((sum, inv) => sum + Number(inv.quantity || 0), 0);
   const unitCost = Number(row.unit_price) || 0;
@@ -51,21 +52,21 @@ function fromDb(row, { categoryName = '—', stockByWarehouse = [] } = {}) {
     unitCost,
     annualDemand: Number(row.annual_demand) || 0,
     orderingCost: Number(row.ordering_cost) || 0,
-    // holding_cost (BD) es un valor absoluto; las páginas usan una tasa.
-    holdingCostRate: unitCost ? holdingCost / unitCost : 0,
+    // Set directly by the administrator; stored as-is (matches the
+    // DB's holding_cost column, an absolute number, not a rate).
+    holdingCost,
     leadTimeDays: Number(row.lead_time_days) || 0,
-    // La BD no tiene safety_stock todavía: queda en 0 hasta que se agregue
-    // esa columna (ver README-backend).
+    // The DB has no safety_stock column yet: stays 0 until that
+    // column is added (see backend README).
     safetyStock: 0,
     currentStock: totalStock,
-    stockByWarehouse, // [{ inventoryId, warehouseId, quantity }] — detalle por bodega
+    stockByWarehouse, // [{ inventoryId, warehouseId, quantity }] — per-warehouse detail
   };
 }
 
-/** Convierte el objeto "bonito" del formulario a lo que espera products (BD). */
+/** Converts the form's "nice" object into what products (DB) expects. */
 function toDb(payload) {
   const unitCost = Number(payload.unitCost) || 0;
-  const rate = Number(payload.holdingCostRate) || 0;
   const annualDemand = Number(payload.annualDemand) || 0;
 
   return {
@@ -76,14 +77,14 @@ function toDb(payload) {
     unit_price: unitCost,
     annual_demand: annualDemand,
     ordering_cost: Number(payload.orderingCost) || 0,
-    // Se convierte la tasa de vuelta a un valor absoluto para la BD.
-    holding_cost: Math.round(unitCost * rate),
+    // Set directly by the administrator — no conversion needed.
+    holding_cost: Number(payload.holdingCost) || 0,
     lead_time_days: Number(payload.leadTimeDays) || 0,
     daily_demand: Math.round((annualDemand / 365) * 100) / 100,
   };
 }
 
-/** Trae todo lo necesario para armar la lista de productos ya "traducida". */
+/** Fetches everything needed to build the already-"translated" product list. */
 async function fetchEnrichedProducts() {
   const [rows, categories, inventory] = await Promise.all([
     api.get('/products'),
@@ -102,9 +103,9 @@ async function fetchEnrichedProducts() {
 }
 
 /**
- * Crea o actualiza el registro de stock del producto en una bodega
- * (tabla `inventory`). Si ya existía un registro para esa bodega, lo
- * actualiza; si no, crea uno nuevo.
+ * Creates or updates the product's stock record in a warehouse
+ * (`inventory` table). Updates the existing record for that
+ * warehouse if there is one, otherwise creates a new one.
  */
 async function upsertStock(productId, warehouseId, quantity, existingStock = []) {
   if (!warehouseId) return;

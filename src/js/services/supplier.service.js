@@ -1,16 +1,14 @@
 /**
- * supplier.service.js — Proveedores.
+ * supplier.service.js — Suppliers.
  *
- * La BD real usa `company_name` y `contact_name` (dos campos distintos:
- * la empresa y la persona de contacto). El mock usaba `name` y `contact`
- * — se mapean directo, es una traducción simple.
+ * The real DB uses `company_name` and `contact_name` (two different
+ * fields: the company and the contact person). Mapped directly to
+ * `name` and `contact`.
  *
- * OJO: el mock también tenía `leadTimeDays` (tiempo de entrega) en el
- * proveedor, pero en la BD real esa columna vive en `products`
- * (lead_time_days), no en `suppliers`. Tiene sentido: el mismo
- * proveedor puede tardar distinto según el producto. Por eso ya NO se
- * edita el lead time acá — se mueve al formulario de productos
- * (ver product.service.js / products.page.js).
+ * NOTE: the lead time (`leadTimeDays`) is NOT edited here — it lives
+ * on `products.lead_time_days` in the real database, since the same
+ * supplier can have a different lead time depending on the product.
+ * See product.service.js / products.page.js.
  */
 import { api } from './api.js';
 

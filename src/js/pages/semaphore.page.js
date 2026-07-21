@@ -1,7 +1,7 @@
 /**
  * semaphore.page.js
- * Lista de productos ordenada por urgencia de compra (semáforo ROP),
- * con la frecuencia de revisión sugerida según la clase ABC.
+ * Product list ordered by purchase urgency (ROP semaphore), with the
+ * suggested review frequency based on ABC class.
  */
 import { renderLayout } from '../components/layout.js';
 import { ProductService } from '../services/product.service.js';
@@ -15,7 +15,7 @@ import { escapeHtml } from '../utils/format.js';
 let filterStatus = '';
 
 export async function renderSemaphorePage(container) {
-  const content = renderLayout(container, { title: 'Semáforo de compra', activePath: '/semaforo' });
+  const content = renderLayout(container, { title: 'Purchase semaphore', activePath: '/semaphore' });
   content.innerHTML = `<div class="sw-loading"><div class="spinner-border" style="color:var(--sw-accent);"></div></div>`;
 
   const [products, suppliers] = await Promise.all([ProductService.getAll(), SupplierService.getAll()]);
@@ -24,8 +24,8 @@ export async function renderSemaphorePage(container) {
 
   const enriched = products.map((p) => {
     const supplier = supplierMap.get(p.supplierId);
-    // El lead time vive en el producto (lead_time_days en la BD real),
-    // no en el proveedor, porque cada producto puede tardar distinto.
+    // Lead time lives on the product (lead_time_days in the real
+    // database), not on the supplier, since it can vary per product.
     const rop = calculateROP(p, p.leadTimeDays || 0);
     const status = getSemaphoreStatus(p, rop);
     const abc = abcMap.get(p.id);
@@ -50,27 +50,27 @@ function paint(content, enriched) {
   content.innerHTML = `
     <div class="sw-page-header">
       <div>
-        <div class="sw-page-title">Semáforo de compra</div>
-        <div class="sw-page-subtitle">Prioriza qué comprar primero según el punto de reorden (ROP).</div>
+        <div class="sw-page-title">Purchase semaphore</div>
+        <div class="sw-page-subtitle">Prioritize what to buy first based on the reorder point (ROP).</div>
       </div>
     </div>
 
     <div class="row g-3 mb-3">
       <div class="col-4">
         <button class="sw-card p-3 w-100 text-start border-0" data-filter="red" style="cursor:pointer;">
-          <div class="d-flex align-items-center gap-2 mb-1"><span class="sw-dot sw-dot-red"></span><span class="fw-semibold">Comprar ahora</span></div>
+          <div class="d-flex align-items-center gap-2 mb-1"><span class="sw-dot sw-dot-red"></span><span class="fw-semibold">Buy now</span></div>
           <div class="sw-kpi-value">${counts.red}</div>
         </button>
       </div>
       <div class="col-4">
         <button class="sw-card p-3 w-100 text-start border-0" data-filter="yellow" style="cursor:pointer;">
-          <div class="d-flex align-items-center gap-2 mb-1"><span class="sw-dot sw-dot-yellow"></span><span class="fw-semibold">Vigilar</span></div>
+          <div class="d-flex align-items-center gap-2 mb-1"><span class="sw-dot sw-dot-yellow"></span><span class="fw-semibold">Watch</span></div>
           <div class="sw-kpi-value">${counts.yellow}</div>
         </button>
       </div>
       <div class="col-4">
         <button class="sw-card p-3 w-100 text-start border-0" data-filter="green" style="cursor:pointer;">
-          <div class="d-flex align-items-center gap-2 mb-1"><span class="sw-dot sw-dot-green"></span><span class="fw-semibold">Saludable</span></div>
+          <div class="d-flex align-items-center gap-2 mb-1"><span class="sw-dot sw-dot-green"></span><span class="fw-semibold">Healthy</span></div>
           <div class="sw-kpi-value">${counts.green}</div>
         </button>
       </div>
@@ -78,12 +78,12 @@ function paint(content, enriched) {
 
     <div class="sw-card p-3 p-lg-4">
       <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <div class="small text-secondary">${filterStatus ? `Mostrando: ${SEMAPHORE_LABEL[filterStatus]}` : 'Mostrando todos los productos'}</div>
-        ${filterStatus ? `<button class="btn btn-sm btn-light" id="clear-filter">Limpiar filtro</button>` : ''}
+        <div class="small text-secondary">${filterStatus ? `Showing: ${SEMAPHORE_LABEL[filterStatus]}` : 'Showing all products'}</div>
+        ${filterStatus ? `<button class="btn btn-sm btn-light" id="clear-filter">Clear filter</button>` : ''}
       </div>
       <div class="table-responsive">
         <table class="table sw-table align-middle mb-0">
-          <thead><tr><th>Producto</th><th>Proveedor</th><th>Clase</th><th>Stock</th><th>ROP</th><th>Estado</th><th>Frecuencia de revisión</th></tr></thead>
+          <thead><tr><th>Product</th><th>Supplier</th><th>Class</th><th>Stock</th><th>ROP</th><th>Status</th><th>Review frequency</th></tr></thead>
           <tbody>
             ${list.map((p) => `
               <tr class="${p.status === 'red' ? 'sw-row-urgent' : ''}">

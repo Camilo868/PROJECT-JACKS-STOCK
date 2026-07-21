@@ -1,14 +1,10 @@
 /**
- * purchase.service.js — Órdenes de compra.
+ * purchase.service.js — Purchase orders.
  *
- * La BD real separa esto en DOS tablas:
+ * The real DB splits this into TWO tables:
  *   - `purchases`: id, supplier_id, purchase_date, total, status
- *   - `purchase_details`: cada artículo de esa compra (product_id,
- *     quantity, unit_price), enlazado por purchase_id
- *
- * El backend ya tiene la columna `status` (ver migrations.sql) y el
- * endpoint PATCH /purchases/:id/status, así que ya no hace falta el
- * parche de localStorage que se usaba antes.
+ *   - `purchase_details`: each line item of that purchase
+ *     (product_id, quantity, unit_price), linked by purchase_id
  */
 import { api } from './api.js';
 
@@ -19,7 +15,7 @@ async function attachDetails(row) {
     supplierId: row.supplier_id,
     createdAt: row.purchase_date,
     total: Number(row.total) || 0,
-    status: row.status || 'pendiente',
+    status: row.status || 'pending',
     items: details.map((d) => ({
       productId: d.product_id,
       quantity: d.quantity,
@@ -42,7 +38,7 @@ export const PurchaseService = {
       supplier_id: order.supplierId,
       purchase_date: new Date().toISOString().slice(0, 10),
       total,
-      status: 'pendiente',
+      status: 'pending',
     });
 
     await Promise.all(order.items.map((it) => api.post('/purchase-details', {

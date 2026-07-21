@@ -1,5 +1,5 @@
 /**
- * notfound.page.js — Página 404.
+ * notfound.page.js — 404 page.
  */
 export async function renderNotFoundPage(container) {
   container.innerHTML = `
@@ -9,10 +9,10 @@ export async function renderNotFoundPage(container) {
         JACKS STOCKS
       </div>
       <div class="display-3 fw-bold" style="color: var(--sw-accent);">404</div>
-      <h4 class="fw-bold mb-2">Página no encontrada</h4>
+      <h4 class="fw-bold mb-2">Page not found</h4>
       <p class="text-secondary mb-4" style="max-width:420px;">
-        La ruta que buscas no existe o fue movida. Verifica la URL o vuelve al panel principal.
+        The page you're looking for doesn't exist or was moved. Check the URL or go back to the main panel.
       </p>
-      <a href="#/dashboard" class="btn sw-btn-accent px-4">Volver al Dashboard</a>
+      <a href="#/dashboard" class="btn sw-btn-accent px-4">Back to Dashboard</a>
     </div>`;
 }

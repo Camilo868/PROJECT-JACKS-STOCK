@@ -1,7 +1,7 @@
 /**
  * sidebar.js
- * Sidebar de navegación principal. Marca como activo el enlace de la
- * ruta actual y expone un id de contenedor para toggle en móvil.
+ * Main navigation sidebar. Marks the current route's link as active
+ * and exposes a container id for the mobile toggle.
  */
 
 const NAV_SECTIONS = [
@@ -12,26 +12,26 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    label: 'Catálogo',
+    label: 'Catalog',
     items: [
-      { path: '/productos', icon: 'bi-box-seam-fill', label: 'Productos' },
-      { path: '/proveedores', icon: 'bi-truck', label: 'Proveedores' },
-      { path: '/bodegas', icon: 'bi-building', label: 'Bodegas' },
+      { path: '/products', icon: 'bi-box-seam-fill', label: 'Products' },
+      { path: '/suppliers', icon: 'bi-truck', label: 'Suppliers' },
+      { path: '/warehouses', icon: 'bi-building', label: 'Warehouses' },
     ],
   },
   {
-    label: 'Operación',
+    label: 'Operations',
     items: [
-      { path: '/movimientos', icon: 'bi-arrow-left-right', label: 'Movimientos' },
-      { path: '/semaforo', icon: 'bi-stoplights-fill', label: 'Semáforo de compra' },
-      { path: '/compras', icon: 'bi-cart-check-fill', label: 'Órdenes de compra' },
+      { path: '/movements', icon: 'bi-arrow-left-right', label: 'Movements' },
+      { path: '/semaphore', icon: 'bi-stoplights-fill', label: 'Purchase Semaphore' },
+      { path: '/purchases', icon: 'bi-cart-check-fill', label: 'Purchase Orders' },
     ],
   },
   {
-    label: 'Sistema',
+    label: 'System',
     items: [
-      { path: '/reportes', icon: 'bi-bar-chart-line-fill', label: 'Reportes' },
-      { path: '/configuracion', icon: 'bi-gear-fill', label: 'Configuración' },
+      { path: '/reports', icon: 'bi-bar-chart-line-fill', label: 'Reports' },
+      { path: '/settings', icon: 'bi-gear-fill', label: 'Settings' },
     ],
   },
 ];
@@ -55,7 +55,7 @@ export function renderSidebar(activePath) {
       </div>
       <nav class="sw-sidebar-nav">${sections}</nav>
       <div class="sw-sidebar-footer">
-        <div class="small text-white-50">CodeUp RIWI · Proyecto Integrador</div>
+        <div class="small text-white-50">CodeUp RIWI · Capstone Project</div>
       </div>
     </aside>`;
 }
