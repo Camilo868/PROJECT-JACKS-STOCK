@@ -1,91 +1,82 @@
 import { pool } from '../../config/db.js';
+import { ok, created, fail, notFound } from '../utils/response.js';
 
-// Obtener todas las categorías
+// Get all categories
 export const getCategories = async (req, res) => {
-    try {
-        const { rows } = await pool.query('SELECT * FROM categories');
-        res.json(rows);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+  try {
+    const { rows } = await pool.query('SELECT * FROM categories');
+    return ok(res, rows);
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Obtener una categoría por ID
+// Get a category by ID
 export const getCategory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { rows } = await pool.query('SELECT * FROM categories WHERE id = $1', [id]);
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query('SELECT * FROM categories WHERE id = $1', [id]);
 
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Categoría no encontrada' });
-        }
-        res.json(rows[0]);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+    if (rows.length === 0) return notFound(res, 'Category not found');
+    return ok(res, rows[0]);
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Obtener una categoría por su Nombre
+// Get a category by name
 export const getCategoryByName = async (req, res) => {
-    try {
-        const { name } = req.params;
-        const { rows } = await pool.query('SELECT * FROM categories WHERE name = $1', [name]);
+  try {
+    const { name } = req.params;
+    const { rows } = await pool.query('SELECT * FROM categories WHERE name = $1', [name]);
 
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Categoría no encontrada' });
-        }
-        res.json(rows);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+    if (rows.length === 0) return notFound(res, 'Category not found');
+    return ok(res, rows);
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Crear una nueva categoría
+// Create a new category
 export const createCategory = async (req, res) => {
-    try {
-        const data = req.body;
-        const { rows } = await pool.query('INSERT INTO categories (name) VALUES ($1) RETURNING *', [data.name]);
-        return res.json(rows[0]);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });       
-    }
+  try {
+    const data = req.body;
+    const { rows } = await pool.query('INSERT INTO categories (name) VALUES ($1) RETURNING *', [data.name]);
+    return created(res, rows[0], 'Category created successfully');
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Eliminar una categoría
+// Delete a category
 export const deleteCategory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { rows } = await pool.query('DELETE FROM categories WHERE id = $1 RETURNING *', [id]);
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query('DELETE FROM categories WHERE id = $1 RETURNING *', [id]);
 
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Categoría no encontrada' });
-        }
-        return res.json({ message: 'Categoría eliminada correctamente' });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+    if (rows.length === 0) return notFound(res, 'Category not found');
+    return ok(res, null, 'Category deleted successfully');
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Actualizar una categoría existente
+// Update an existing category
 export const updateCategory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const data = req.body;
+  try {
+    const { id } = req.params;
+    const data = req.body;
+    const { rows } = await pool.query('UPDATE categories SET name = $1 WHERE id = $2 RETURNING *', [data.name, id]);
 
-        const { rows } = await pool.query('UPDATE categories SET name = $1 WHERE id = $2 RETURNING *', [data.name, id]);
-
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Categoría no encontrada' });
-        }
-
-        return res.json(rows[0]);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+    if (rows.length === 0) return notFound(res, 'Category not found');
+    return ok(res, rows[0], 'Category updated successfully');
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };

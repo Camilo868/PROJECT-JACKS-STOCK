@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { getWarehouses, 
         getWarehouse, 
         getWarehouseByName,
+        getWarehouseCapacity,
         createWarehouse,
         deleteWarehouse,
         updateWarehouse 
@@ -12,6 +13,9 @@ const router = Router();
 
 // Obtener todos los almacenes
 router.get('/warehouses', getWarehouses);
+
+// Espacio disponible por bodega (calculado en SQL)
+router.get('/warehouses/capacity', getWarehouseCapacity);
 
 // Obtener un almacén por ID
 router.get('/warehouses/:id', getWarehouse);

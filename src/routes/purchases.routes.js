@@ -5,7 +5,8 @@ import {
     getPurchasesBySupplierId,
     createPurchase,
     deletePurchase,
-    updatePurchase 
+    updatePurchase,
+    updatePurchaseStatus 
                     } from '../controllers/purchases.controller.js';
 
 const router = Router();
@@ -13,11 +14,11 @@ const router = Router();
 // Obtener todas las compras
 router.get('/purchases', getPurchases);
 
-// Obtener una compra por su ID único
-router.get('/purchases/:id', getPurchase);
-
 // Obtener el historial de compras de un proveedor específico
 router.get('/purchases/supplier/:supplier_id', getPurchasesBySupplierId);
+
+// Obtener una compra por su ID único
+router.get('/purchases/:id', getPurchase);
 
 // Registrar una nueva compra
 router.post('/purchases', createPurchase);
@@ -27,5 +28,8 @@ router.delete('/purchases/:id', deletePurchase);
 
 // Actualizar una compra
 router.put('/purchases/:id', updatePurchase);
+
+// Actualizar solo el estado (pendiente/recibida/cancelada)
+router.patch('/purchases/:id/status', updatePurchaseStatus);
 
 export default router;

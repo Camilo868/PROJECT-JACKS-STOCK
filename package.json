@@ -1,13 +1,13 @@
 {
-  "name": "backend",
+  "name": "jacks-stocks-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
+  "description": "REST API for Jacks Stocks — an inventory management system with EOQ, ABC classification and reorder point (ROP) support.",
+  "main": "src/server.js",
   "scripts": {
     "dev": "node --env-file ./config/.env --watch ./src/server.js",
-    "start": "node ./src/server.js"
+    "start": "node --env-file ./config/.env ./src/server.js"
   },
-  "keywords": [],
+  "keywords": ["inventory", "eoq", "express", "postgresql"],
   "author": "",
   "license": "ISC",
   "type": "module",

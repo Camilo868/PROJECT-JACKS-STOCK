@@ -1,94 +1,89 @@
 import { pool } from '../../config/db.js';
+import { ok, created, fail, notFound } from '../utils/response.js';
 
-// Obtener todo el inventario
+// Get all inventory records
 export const getInventories = async (req, res) => {
-    try {
-        const { rows } = await pool.query('SELECT * FROM inventory');
-        res.json(rows);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+  try {
+    const { rows } = await pool.query('SELECT * FROM inventory');
+    return ok(res, rows);
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Obtener un registro de inventario por ID
+// Get a single inventory record by ID
 export const getInventory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { rows } = await pool.query('SELECT * FROM inventory WHERE id = $1', [id]);
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query('SELECT * FROM inventory WHERE id = $1', [id]);
 
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Registro de inventario no encontrado' });
-        }
-        res.json(rows[0]); // Devolvemos el objeto directamente en lugar del arreglo
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+    if (rows.length === 0) return notFound(res, 'Inventory record not found');
+    return ok(res, rows[0]);
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Obtener registros de inventario por ID de producto (Reemplaza la búsqueda por nombre)
+// Get inventory records for a specific product (across all warehouses)
 export const getInventoryByProductId = async (req, res) => {
-    try {
-        const { product_id } = req.params;
-        const { rows } = await pool.query('SELECT * FROM inventory WHERE product_id = $1', [product_id]);
-
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'No se encontraron productos en el inventario' });
-        }
-        res.json(rows);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+  try {
+    const { product_id } = req.params;
+    const { rows } = await pool.query('SELECT * FROM inventory WHERE product_id = $1', [product_id]);
+    // Returns an empty list instead of 404 — a product with no stock
+    // yet is a valid state, not an error.
+    return ok(res, rows);
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Crear un nuevo registro en el inventario
+// Create a new inventory record
 export const createInventory = async (req, res) => {
-    try {
-        const data = req.body;
-        const { rows } = await pool.query('INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES ($1, $2, $3) RETURNING *', 
-            [data.warehouse_id, data.product_id, data.quantity]);
-
-        return res.json(rows[0]);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });       
-    }
+  try {
+    const data = req.body;
+    const { rows } = await pool.query(
+      'INSERT INTO inventory (warehouse_id, product_id, quantity) VALUES ($1, $2, $3) RETURNING *',
+      [data.warehouse_id, data.product_id, data.quantity],
+    );
+    return created(res, rows[0], 'Inventory record created successfully');
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Eliminar un registro de inventario
+// Delete an inventory record
 export const deleteInventory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { rows } = await pool.query('DELETE FROM inventory WHERE id = $1 RETURNING *', [id]);
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query('DELETE FROM inventory WHERE id = $1 RETURNING *', [id]);
 
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Registro de inventario no encontrado' });
-        }
-        return res.json({ message: 'Registro de inventario eliminado correctamente' });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+    if (rows.length === 0) return notFound(res, 'Inventory record not found');
+    return ok(res, null, 'Inventory record deleted successfully');
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Actualizar un registro de inventario
+// Update an inventory record (e.g. stock quantity)
 export const updateInventory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const data = req.body;
+  try {
+    const { id } = req.params;
+    const data = req.body;
 
-        const { rows } = await pool.query('UPDATE inventory SET warehouse_id = $1, product_id = $2, quantity = $3 WHERE id = $4 RETURNING *', 
-            [data.warehouse_id, data.product_id, data.quantity, id]);
+    const { rows } = await pool.query(
+      'UPDATE inventory SET warehouse_id = $1, product_id = $2, quantity = $3 WHERE id = $4 RETURNING *',
+      [data.warehouse_id, data.product_id, data.quantity, id],
+    );
 
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Registro de inventario no encontrado' });
-        }
-
-        return res.json(rows[0]);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+    if (rows.length === 0) return notFound(res, 'Inventory record not found');
+    return ok(res, rows[0], 'Inventory record updated successfully');
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };

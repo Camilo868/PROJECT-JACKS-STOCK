@@ -14,6 +14,9 @@ const router = Router();
 // Login
 router.post('/users/login', login);
 
+// Register (alias of createUser, clearer for the frontend)
+router.post('/users/register', createUser);
+
 // Obtener todos los usuarios
 router.get('/users', getUsers);
 

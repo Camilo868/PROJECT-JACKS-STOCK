@@ -1,99 +1,103 @@
 import { pool } from '../../config/db.js';
+import { ok, created, fail, notFound } from '../utils/response.js';
 
-// Obtener todas las compras
+// Get all purchase orders
 export const getPurchases = async (req, res) => {
-    try {
-        const { rows } = await pool.query('SELECT * FROM purchases');
-        res.json(rows);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+  try {
+    const { rows } = await pool.query('SELECT * FROM purchases');
+    return ok(res, rows);
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Obtener una compra por ID
+// Get a purchase order by ID
 export const getPurchase = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { rows } = await pool.query('SELECT * FROM purchases WHERE id = $1', [id]);
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query('SELECT * FROM purchases WHERE id = $1', [id]);
 
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Compra no encontrada' });
-        }
-        res.json(rows[0]);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+    if (rows.length === 0) return notFound(res, 'Purchase not found');
+    return ok(res, rows[0]);
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Obtener compras filtradas por ID de proveedor (Historial por proveedor)
+// Get purchase history for a specific supplier
 export const getPurchasesBySupplierId = async (req, res) => {
-    try {
-        const { supplier_id } = req.params;
-        const { rows } = await pool.query('SELECT * FROM purchases WHERE supplier_id = $1', [supplier_id]);
-
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'No se encontraron compras para este proveedor' });
-        }
-        res.json(rows);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+  try {
+    const { supplier_id } = req.params;
+    const { rows } = await pool.query('SELECT * FROM purchases WHERE supplier_id = $1', [supplier_id]);
+    return ok(res, rows);
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Registrar una nueva compra
+// Register a new purchase order
 export const createPurchase = async (req, res) => {
-    try {
-        const data = req.body;
-        const queryText = `INSERT INTO purchases (supplier_id, purchase_date, total) VALUES ($1, $2, $3) RETURNING *`;
-        
-        const values = [data.supplier_id, data.purchase_date, data.total];
+  try {
+    const data = req.body;
+    const queryText = 'INSERT INTO purchases (supplier_id, purchase_date, total, status) VALUES ($1, $2, $3, $4) RETURNING *';
+    const values = [data.supplier_id, data.purchase_date, data.total, data.status || 'pendiente'];
 
-        const { rows } = await pool.query(queryText, values);
-        return res.json(rows[0]);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });       
-    }
+    const { rows } = await pool.query(queryText, values);
+    return created(res, rows[0], 'Purchase created successfully');
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Eliminar un registro de compra
+// Delete a purchase order
 export const deletePurchase = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { rows } = await pool.query('DELETE FROM purchases WHERE id = $1 RETURNING *', [id]);
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query('DELETE FROM purchases WHERE id = $1 RETURNING *', [id]);
 
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Compra no encontrada' });
-        }
-        return res.json({ message: 'Compra de inventario eliminada correctamente' });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+    if (rows.length === 0) return notFound(res, 'Purchase not found');
+    return ok(res, null, 'Purchase deleted successfully');
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
 
-// Actualizar una compra existente
+// Update an existing purchase order
 export const updatePurchase = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const data = req.body;
+  try {
+    const { id } = req.params;
+    const data = req.body;
 
-        const queryText = `UPDATE purchases SET supplier_id = $1, purchase_date = $2, total = $3 WHERE id = $4 RETURNING *`;
+    const queryText = 'UPDATE purchases SET supplier_id = $1, purchase_date = $2, total = $3, status = $4 WHERE id = $5 RETURNING *';
+    const values = [data.supplier_id, data.purchase_date, data.total, data.status, id];
 
-        const values = [data.supplier_id, data.purchase_date, data.total, id];
+    const { rows } = await pool.query(queryText, values);
 
-        const { rows } = await pool.query(queryText, values);
+    if (rows.length === 0) return notFound(res, 'Purchase not found');
+    return ok(res, rows[0], 'Purchase updated successfully');
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
+};
 
-        if (rows.length === 0) {
-            return res.status(404).json({ message: 'Compra no encontrada' });
-        }
+// Update only the status of a purchase order (pendiente/recibida/cancelada)
+export const updatePurchaseStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
 
-        return res.json(rows[0]);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
+    const { rows } = await pool.query('UPDATE purchases SET status = $1 WHERE id = $2 RETURNING *', [status, id]);
+
+    if (rows.length === 0) return notFound(res, 'Purchase not found');
+    return ok(res, rows[0], 'Purchase status updated successfully');
+  } catch (error) {
+    console.log(error);
+    return fail(res);
+  }
 };
