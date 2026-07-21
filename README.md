@@ -1,188 +1,188 @@
 # 📦 JACKS STOCKS — Backend
 
-> API REST para un sistema de gestión de inventario con cálculo automático de **EOQ** (cantidad económica de pedido), **clasificación ABC** y **punto de reorden (ROP)**.
+> REST API for an inventory management system with automatic **EOQ** (Economic Order Quantity), **ABC classification**, and **Reorder Point (ROP)** calculation.
 
 ![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?logo=node.js&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-4169E1?logo=postgresql&logoColor=white)
 ![License](https://img.shields.io/badge/license-ISC-lightgrey)
 
-<!-- Logo del proyecto -->
+<!-- Project logo -->
 <!-- ![Jacks Stocks](./docs/logo.png) -->
 
 ---
 
-## 📖 Descripción del proyecto
+## 📖 Project description
 
-**Jacks Stocks** es un sistema de gestión de inventario pensado para pequeñas y medianas empresas. Permite administrar productos, proveedores, bodegas, compras y movimientos de stock, y calcula automáticamente:
+**Jacks Stocks** is an inventory management system built for small and medium businesses. It manages products, suppliers, warehouses, purchases, and stock movements, and automatically calculates:
 
-- **EOQ** — cuánto pedir en cada orden de compra para minimizar costos.
-- **ROP** — en qué punto de stock se debe volver a pedir.
-- **Clasificación ABC** — qué productos merecen más atención según su valor de consumo anual.
+- **EOQ** — how much to order in each purchase to minimize costs.
+- **ROP** — at what stock level a new order should be placed.
+- **ABC classification** — which products deserve the most attention based on annual consumption value.
 
-Este repositorio contiene únicamente el **backend**: una API REST construida con Express.js sobre PostgreSQL (Supabase). El frontend (HTML + CSS + JavaScript Vanilla) vive en un repositorio aparte y consume esta API por HTTP.
-
----
-
-## ✨ Características principales
-
-- CRUD completo para productos, categorías, proveedores, bodegas, inventario, movimientos, compras y detalle de compras.
-- Autenticación con **bcrypt** (hash de contraseñas) y **JWT** (sesión).
-- Respuestas HTTP estandarizadas en todos los endpoints.
-- Endpoint de **espacio disponible por bodega**, calculado en SQL.
-- Endpoints de **reportes** (EOQ/ROP, movimientos por tipo, stock por producto) calculados en SQL.
-- Manejo de estado de órdenes de compra (`pendiente` / `recibida` / `cancelada`).
+This repository contains only the **backend**: a REST API built with Express.js on top of PostgreSQL (Supabase). The frontend (HTML + CSS + Vanilla JavaScript) lives in a separate repository and consumes this API over HTTP.
 
 ---
 
-## 🏗️ Arquitectura del proyecto
+## ✨ Key features
 
-El proyecto sigue una arquitectura **MVC simplificada**, organizada por recurso:
+- Full CRUD for products, categories, suppliers, warehouses, inventory, movements, purchases, and purchase details.
+- Authentication with **bcrypt** (password hashing) and **JWT** (session tokens).
+- Standardized HTTP responses across every endpoint.
+- **Available warehouse space** endpoint, calculated in SQL.
+- **Reports** endpoints (EOQ/ROP, movements by type, stock by product) calculated in SQL.
+- Purchase order status handling (`pending` / `received` / `cancelled`).
+
+---
+
+## 🏗️ Project architecture
+
+The project follows a simplified **MVC architecture**, organized by resource:
 
 ```
-Request → Router → Controller → PostgreSQL (pool) → Response estándar
+Request → Router → Controller → PostgreSQL (pool) → Standard response
 ```
 
-Cada recurso (productos, proveedores, bodegas, etc.) tiene su propio archivo de rutas y su propio controlador, siguiendo el mismo patrón CRUD.
+Each resource (products, suppliers, warehouses, etc.) has its own route file and its own controller, following the same CRUD pattern.
 
 ---
 
-## 🛠️ Tecnologías utilizadas
+## 🛠️ Technologies used
 
-| Tecnología | Uso |
+| Technology | Purpose |
 |---|---|
-| Node.js | Entorno de ejecución |
-| Express 5 | Framework HTTP / enrutamiento |
-| PostgreSQL (Supabase) | Base de datos relacional |
-| `pg` | Cliente de PostgreSQL para Node |
-| `bcrypt` | Hash seguro de contraseñas |
-| `jsonwebtoken` | Autenticación basada en tokens |
-| `cors` | Permitir peticiones desde el frontend |
-| `morgan` | Logging de peticiones HTTP |
+| Node.js | Runtime environment |
+| Express 5 | HTTP framework / routing |
+| PostgreSQL (Supabase) | Relational database |
+| `pg` | PostgreSQL client for Node |
+| `bcrypt` | Secure password hashing |
+| `jsonwebtoken` | Token-based authentication |
+| `cors` | Allow requests from the frontend |
+| `morgan` | HTTP request logging |
 
 ---
 
-## 📂 Estructura del proyecto
+## 📂 Project structure
 
 ```
 PROJECT-JACKS-STOCK-BACKEND/
 ├── config/
-│   ├── .env                 # Variables de entorno (no versionado)
-│   ├── config.js             # Config exportada (PORT)
-│   └── db.js                  # Pool de conexión a PostgreSQL
-├── migrations.sql              # Cambios pendientes sobre el esquema original
+│   ├── .env                 # Environment variables (not versioned)
+│   ├── config.js             # Exported config (PORT)
+│   └── db.js                  # PostgreSQL connection pool
+├── migrations.sql              # Pending changes on top of BDT + queries.sql
 ├── src/
-│   ├── controllers/             # Lógica de cada endpoint
-│   ├── routes/                    # Definición de rutas por recurso
-│   ├── services/                   # Lógica reutilizable (ej. hashing)
+│   ├── controllers/             # Logic for each endpoint
+│   ├── routes/                    # Route definitions per resource
+│   ├── services/                   # Reusable logic (e.g. hashing)
 │   ├── utils/
-│   │   ├── jwt.js                    # Firmar/verificar tokens
-│   │   └── response.js                # Envoltura estándar de respuestas
-│   └── server.js                        # Punto de entrada
+│   │   ├── jwt.js                    # Sign/verify tokens
+│   │   └── response.js                # Standard response envelope
+│   └── server.js                        # Entry point
 ├── package.json
 └── README.md
 ```
 
 ---
 
-## 🚀 Instalación
+## 🚀 Installation
 
-### 1. Clonar el repositorio e instalar dependencias
+### 1. Clone the repository and install dependencies
 
 ```bash
-git clone <url-del-repositorio>
+git clone <repository-url>
 cd PROJECT-JACKS-STOCK-BACKEND
 npm install
 ```
 
-### 2. Variables de entorno
+### 2. Environment variables
 
-Crea `config/.env` con tus credenciales de PostgreSQL/Supabase:
+Create `config/.env` with your PostgreSQL/Supabase credentials:
 
 ```env
-DB_USER=tu_usuario
-DB_HOST=tu_host
-DB_PASSWORD=tu_password
-DB_DATABASE=tu_base_de_datos
+DB_USER=your_user
+DB_HOST=your_host
+DB_PASSWORD=your_password
+DB_DATABASE=your_database
 DB_PORT=5432
 
 PORT=6543
-JWT_SECRET=una_cadena_larga_y_aleatoria
+JWT_SECRET=a_long_random_string
 ```
 
-### 3. Configurar PostgreSQL
+### 3. Set up PostgreSQL
 
-Ejecuta el script `BDT + queries.sql` (crea las tablas y datos de ejemplo) y luego `migrations.sql` (agrega la columna `status` a `purchases`, necesaria para el flujo de compras del frontend).
+Run the `BDT + queries.sql` script (creates tables and sample data), then `migrations.sql` (adds the `status` column to `purchases` and the `note` column to `movements`, both required for the frontend's purchase and movement flows).
 
-### 4. Inicializar el servidor
+### 4. Start the server
 
 ```bash
-npm run dev     # con recarga automática
-# o
+npm run dev     # with auto-reload
+# or
 npm start
 ```
 
-Deberías ver en consola:
+If everything is configured correctly, you should see:
 
 ```
-✅ Conectado a Supabase
+✅ Connected to Supabase
 Jacks Stocks API listening on port: 6543
 ```
 
-### 5. Ejecutar el frontend
+### 5. Run the frontend
 
-El frontend es un sitio estático (sin build). Sírvelo con cualquier servidor estático, por ejemplo:
+The frontend is a static site (no build step). Serve it with any static server, for example:
 
 ```bash
 npx serve .
 ```
 
-Y asegúrate de que `API_CONFIG.BASE_URL` en `src/js/services/api.js` apunte a `http://localhost:6543` con `MOCK_MODE: false`.
+Make sure `API_CONFIG.BASE_URL` in `src/js/services/api.js` points to `http://localhost:6543`.
 
 ---
 
-## 🔌 Endpoints disponibles
+## 🔌 Available endpoints
 
-Todas las respuestas siguen el formato:
+Every response follows this shape:
 
 ```json
 { "success": true, "message": "Data obtained successfully", "data": [...] }
 ```
 
-| Método | Endpoint | Descripción |
+| Method | Endpoint | Description |
 |---|---|---|
-| POST | `/users/login` | Iniciar sesión (devuelve `token` + `user`) |
-| POST | `/users/register` | Registrar usuario |
-| GET | `/users` | Listar usuarios |
-| GET/PUT/DELETE | `/users/:id` | Obtener/actualizar/eliminar usuario |
-| GET | `/categories` | Listar categorías |
-| POST/GET/PUT/DELETE | `/categories(/:id)` | CRUD de categorías |
-| GET | `/suppliers` | Listar proveedores |
-| POST/GET/PUT/DELETE | `/suppliers(/:id)` | CRUD de proveedores |
-| GET | `/warehouses` | Listar bodegas |
-| GET | `/warehouses/capacity` | Espacio disponible por bodega (SQL) |
-| POST/GET/PUT/DELETE | `/warehouses(/:id)` | CRUD de bodegas |
-| GET | `/products` | Listar productos |
-| POST/GET/PUT/DELETE | `/products(/:id)` | CRUD de productos |
-| GET | `/inventory` | Listar inventario |
-| GET | `/inventory/product/:product_id` | Stock de un producto por bodega |
-| POST/PUT/DELETE | `/inventory(/:id)` | CRUD de inventario |
-| GET | `/movements` | Listar movimientos |
-| GET | `/movements/product/:product_id` | Historial de un producto |
-| POST/PUT/DELETE | `/movements(/:id)` | CRUD de movimientos |
-| GET | `/purchases` | Listar compras |
-| GET | `/purchases/supplier/:supplier_id` | Compras de un proveedor |
-| PATCH | `/purchases/:id/status` | Cambiar estado de una compra |
-| POST/GET/PUT/DELETE | `/purchases(/:id)` | CRUD de compras |
-| GET | `/purchase-details/purchase/:purchase_id` | Ítems de una compra |
-| POST/GET/PUT/DELETE | `/purchase-details(/:id)` | CRUD de detalle de compras |
-| GET | `/reports/eoq` | EOQ/ROP calculado en SQL |
-| GET | `/reports/movements-summary` | Movimientos agrupados por tipo |
-| GET | `/reports/stock-by-product` | Stock total por producto |
+| POST | `/users/login` | Log in (returns `token` + `user`) |
+| POST | `/users/register` | Register a user |
+| GET | `/users` | List users |
+| GET/PUT/DELETE | `/users/:id` | Get/update/delete a user |
+| GET | `/categories` | List categories |
+| POST/GET/PUT/DELETE | `/categories(/:id)` | Category CRUD |
+| GET | `/suppliers` | List suppliers |
+| POST/GET/PUT/DELETE | `/suppliers(/:id)` | Supplier CRUD |
+| GET | `/warehouses` | List warehouses |
+| GET | `/warehouses/capacity` | Available space per warehouse (SQL) |
+| POST/GET/PUT/DELETE | `/warehouses(/:id)` | Warehouse CRUD |
+| GET | `/products` | List products |
+| POST/GET/PUT/DELETE | `/products(/:id)` | Product CRUD |
+| GET | `/inventory` | List inventory |
+| GET | `/inventory/product/:product_id` | Stock of a product per warehouse |
+| POST/PUT/DELETE | `/inventory(/:id)` | Inventory CRUD |
+| GET | `/movements` | List movements |
+| GET | `/movements/product/:product_id` | History for a product |
+| POST/PUT/DELETE | `/movements(/:id)` | Movement CRUD |
+| GET | `/purchases` | List purchase orders |
+| GET | `/purchases/supplier/:supplier_id` | Purchases from a supplier |
+| PATCH | `/purchases/:id/status` | Change a purchase order's status |
+| POST/GET/PUT/DELETE | `/purchases(/:id)` | Purchase order CRUD |
+| GET | `/purchase-details/purchase/:purchase_id` | Items of a purchase order |
+| POST/GET/PUT/DELETE | `/purchase-details(/:id)` | Purchase detail CRUD |
+| GET | `/reports/eoq` | EOQ/ROP calculated in SQL |
+| GET | `/reports/movements-summary` | Movements grouped by type |
+| GET | `/reports/stock-by-product` | Total stock per product |
 
 ---
 
-## 🔄 Flujo de funcionamiento
+## 🔄 Data flow
 
 ```
 Frontend (fetch)
@@ -193,21 +193,21 @@ Frontend (fetch)
       ↓
   PostgreSQL (pool)
       ↓
-Respuesta estándar { success, message, data }
+Standard response { success, message, data }
 ```
 
 ---
 
-## 📸 Capturas
+## 📸 Screenshots
 
-<!-- Espacio reservado para capturas de pantalla del sistema en funcionamiento -->
+<!-- Reserved space for screenshots of the running system -->
 
 ---
 
-## 👥 Autores
+## 👥 Authors
 
-Proyecto Integrador — CodeUp RIWI 2026.
+Capstone Project — CodeUp RIWI 2026.
 
-## 📄 Licencia
+## 📄 License
 
 ISC.

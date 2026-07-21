@@ -11,25 +11,25 @@ import { getWarehouses,
 
 const router = Router();
 
-// Obtener todos los almacenes
+// Get all warehouses
 router.get('/warehouses', getWarehouses);
 
-// Espacio disponible por bodega (calculado en SQL)
+// Available space per warehouse (calculated in SQL)
 router.get('/warehouses/capacity', getWarehouseCapacity);
 
-// Obtener un almacén por ID
+// Get a warehouse by ID
 router.get('/warehouses/:id', getWarehouse);
 
-// Buscar un almacén por su nombre
+// Find a warehouse by name
 router.get('/warehouses/search/:name', getWarehouseByName);
 
-// Crear un nuevo almacén
+// Create a new warehouse
 router.post('/warehouses', createWarehouse);
 
-// Eliminar un almacén
+// Delete a warehouse
 router.delete('/warehouses/:id', deleteWarehouse);
 
-// Actualizar un almacén existente
+// Update an existing warehouse
 router.put('/warehouses/:id', updateWarehouse);
 
 export default router;

@@ -43,8 +43,8 @@ export const getMovementsByProductId = async (req, res) => {
 export const createMovement = async (req, res) => {
   try {
     const data = req.body;
-    const queryText = 'INSERT INTO movements (product_id, warehouse_id, movement_type, quantity, movement_date) VALUES ($1, $2, $3, $4, $5) RETURNING *';
-    const values = [data.product_id, data.warehouse_id, data.movement_type, data.quantity, data.movement_date];
+    const queryText = 'INSERT INTO movements (product_id, warehouse_id, movement_type, quantity, movement_date, note) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
+    const values = [data.product_id, data.warehouse_id, data.movement_type, data.quantity, data.movement_date, data.note || null];
 
     const { rows } = await pool.query(queryText, values);
     return created(res, rows[0], 'Movement registered successfully');
@@ -74,8 +74,8 @@ export const updateMovement = async (req, res) => {
     const { id } = req.params;
     const data = req.body;
 
-    const queryText = 'UPDATE movements SET product_id = $1, warehouse_id = $2, movement_type = $3, quantity = $4, movement_date = $5 WHERE id = $6 RETURNING *';
-    const values = [data.product_id, data.warehouse_id, data.movement_type, data.quantity, data.movement_date, id];
+    const queryText = 'UPDATE movements SET product_id = $1, warehouse_id = $2, movement_type = $3, quantity = $4, movement_date = $5, note = $6 WHERE id = $7 RETURNING *';
+    const values = [data.product_id, data.warehouse_id, data.movement_type, data.quantity, data.movement_date, data.note || null, id];
 
     const { rows } = await pool.query(queryText, values);
 

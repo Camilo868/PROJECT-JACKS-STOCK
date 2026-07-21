@@ -10,22 +10,22 @@ import {
 
 const router = Router();
 
-// Obtener todos los movimientos
+// Get all movements
 router.get('/movements', getMovements);
 
-// Obtener un movimiento por su ID único
+// Get a movement by its unique ID
 router.get('/movements/:id', getMovement);
 
-// Obtener todos los movimientos asociados a un producto específico
+// Get all movements linked to a specific product
 router.get('/movements/product/:product_id', getMovementsByProductId);
 
-// Crear un nuevo registro de movimiento
+// Create a new movement record
 router.post('/movements', createMovement);
 
-// Eliminar un movimiento
+// Delete a movement
 router.delete('/movements/:id', deleteMovement);
 
-// Actualizar un movimiento
+// Update a movement
 router.put('/movements/:id', updateMovement);
 
 export default router;

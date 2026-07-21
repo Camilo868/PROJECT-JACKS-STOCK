@@ -43,7 +43,7 @@ export const createPurchase = async (req, res) => {
   try {
     const data = req.body;
     const queryText = 'INSERT INTO purchases (supplier_id, purchase_date, total, status) VALUES ($1, $2, $3, $4) RETURNING *';
-    const values = [data.supplier_id, data.purchase_date, data.total, data.status || 'pendiente'];
+    const values = [data.supplier_id, data.purchase_date, data.total, data.status || 'pending'];
 
     const { rows } = await pool.query(queryText, values);
     return created(res, rows[0], 'Purchase created successfully');

@@ -17,22 +17,22 @@ router.post('/users/login', login);
 // Register (alias of createUser, clearer for the frontend)
 router.post('/users/register', createUser);
 
-// Obtener todos los usuarios
+// Get all users
 router.get('/users', getUsers);
 
-// Obtener un usuario por ID
+// Get a user by ID
 router.get('/users/:id', getUser);
 
-// Buscar un usuario por su nombre
+// Find a user by name
 router.get('/users/search/:name', getUserByName);
 
-// Crear un nuevo usuario
+// Create a new user
 router.post('/users', createUser);
 
-// Eliminar un usuario
+// Delete a user
 router.delete('/users/:id', deleteUser);
 
-// Actualizar un usuario existente
+// Update an existing user
 router.put('/users/:id', updateUser);
 
 export default router;

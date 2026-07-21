@@ -10,22 +10,22 @@ import {
 
 const router = Router();
 
-// Obtener todos los productos
+// Get all products
 router.get('/products', getProducts);
 
-// Obtener por ID único
+// Get by unique ID
 router.get('/products/:id', getProduct);
 
-// Obtener por nombre exacto
+// Get by exact name
 router.get('/products/search/:name', getProductByName);
 
-// Crear un producto
+// Create a product
 router.post('/products', createProduct);
 
-// Eliminar un producto
+// Delete a product
 router.delete('/products/:id', deleteProduct);
 
-// Actualizar un producto
+// Update a product
 router.put('/products/:id', updateProduct);
 
 export default router;

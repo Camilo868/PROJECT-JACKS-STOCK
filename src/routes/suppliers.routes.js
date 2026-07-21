@@ -10,22 +10,22 @@ import {
 
 const router = Router();
 
-// Obtener todos los proveedores
+// Get all suppliers
 router.get('/suppliers', getSuppliers);
 
-// Obtener un proveedor por su ID único
+// Get a supplier by its unique ID
 router.get('/suppliers/:id', getSupplier);
 
-// Buscar proveedores por el nombre de la empresa
+// Find suppliers by company name
 router.get('/suppliers/search/:company_name', getSupplierByCompanyName);
 
-// Crear un nuevo proveedor
+// Create a new supplier
 router.post('/suppliers', createSupplier);
 
-// Eliminar un proveedor
+// Delete a supplier
 router.delete('/suppliers/:id', deleteSupplier);
 
-// Actualizar un proveedor
+// Update a supplier
 router.put('/suppliers/:id', updateSupplier);
 
 export default router;

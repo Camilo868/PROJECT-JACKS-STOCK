@@ -10,22 +10,22 @@ import {
 
 const router = Router();
 
-// Obtener todos los detalles de compras globales
+// Get all purchase details globally
 router.get('/purchase-details', getPurchaseDetails);
 
-// Obtener un detalle de compra por su ID único de registro
+// Get a purchase detail by its unique record ID
 router.get('/purchase-details/:id', getPurchaseDetail);
 
-// Obtener el desglose completo de artículos usando el ID de la compra principal
+// Get the full item breakdown using the parent purchase ID
 router.get('/purchase-details/purchase/:purchase_id', getDetailsByPurchaseId);
 
-// Agregar un artículo/detalle a una compra
+// Add an item/detail to a purchase
 router.post('/purchase-details', createPurchaseDetail);
 
-// Eliminar un detalle de la compra
+// Delete a purchase detail
 router.delete('/purchase-details/:id', deletePurchaseDetail);
 
-// Modificar cantidad o precio de un detalle de compra
+// Modify the quantity or price of a purchase detail
 router.put('/purchase-details/:id', updatePurchaseDetail);
 
 export default router;

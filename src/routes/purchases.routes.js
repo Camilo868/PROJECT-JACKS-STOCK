@@ -11,25 +11,25 @@ import {
 
 const router = Router();
 
-// Obtener todas las compras
+// Get all purchases
 router.get('/purchases', getPurchases);
 
-// Obtener el historial de compras de un proveedor específico
+// Get the purchase history for a specific supplier
 router.get('/purchases/supplier/:supplier_id', getPurchasesBySupplierId);
 
-// Obtener una compra por su ID único
+// Get a purchase by its unique ID
 router.get('/purchases/:id', getPurchase);
 
-// Registrar una nueva compra
+// Register a new purchase
 router.post('/purchases', createPurchase);
 
-// Eliminar una compra
+// Delete a purchase
 router.delete('/purchases/:id', deletePurchase);
 
-// Actualizar una compra
+// Update a purchase
 router.put('/purchases/:id', updatePurchase);
 
-// Actualizar solo el estado (pendiente/recibida/cancelada)
+// Update only the status (pending/received/cancelled)
 router.patch('/purchases/:id/status', updatePurchaseStatus);
 
 export default router;

@@ -10,22 +10,22 @@ import {
 
 const router = Router();
 
-// Obtener todo el inventario
+// Get all inventory
 router.get('/inventory', getInventories);
 
-// Obtener por ID único de registro
+// Get by unique record ID
 router.get('/inventory/:id', getInventory);
 
-// Obtener todos los registros vinculados a un producto específico
+// Get all records linked to a specific product
 router.get('/inventory/product/:product_id', getInventoryByProductId);
 
-// Crear registro de inventario
+// Create an inventory record
 router.post('/inventory', createInventory);
 
-// Eliminar registro de inventario
+// Delete an inventory record
 router.delete('/inventory/:id', deleteInventory);
 
-// Actualizar registro de inventario
+// Update an inventory record
 router.put('/inventory/:id', updateInventory);
 
 export default router;

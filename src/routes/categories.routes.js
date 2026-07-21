@@ -10,22 +10,22 @@ import {
 
 const router = Router();
 
-// Obtener todas las categorías
+// Get all categories
 router.get('/categories', getCategories);
 
-// Obtener una categoría por su ID único
+// Get a category by its unique ID
 router.get('/categories/:id', getCategory);
 
-// Buscar una categoría por su nombre exacto
+// Find a category by exact name
 router.get('/categories/search/:name', getCategoryByName);
 
-// Crear una nueva categoría
+// Create a new category
 router.post('/categories', createCategory);
 
-// Eliminar una categoría
+// Delete a category
 router.delete('/categories/:id', deleteCategory);
 
-// Actualizar una categoría
+// Update a category
 router.put('/categories/:id', updateCategory);
 
 export default router;
