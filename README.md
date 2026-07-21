@@ -102,13 +102,11 @@ npm install
 Crear `config/.env` con:
 
 ```env
-DB_USER=
-DB_HOST=
-DB_PASSWORD=
-DB_DATABASE=
-DB_PORT=
-PORT=6543
-JWT_SECRET=
+DB_USER=postgres.zhwyvnxbanyoqcykgkjf
+DB_PASSWORD="Project#12345*"
+DB_HOST=aws-1-us-east-2.pooler.supabase.com
+DB_PORT=6543
+DB_DATABASE=postgres
 ```
 
 `PORT` y `JWT_SECRET` son opcionales — si faltan, el backend usa `6543` y un secreto de desarrollo (`dev-secret-change-me`) respectivamente, que no debería usarse fuera de desarrollo local.
