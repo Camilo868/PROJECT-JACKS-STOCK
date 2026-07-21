@@ -4,10 +4,15 @@ import { getUsers,
         getUserByName, 
         createUser, 
         deleteUser, 
-        updateUser } from '../controllers/users.controller.js';
+        updateUser,
+        login 
+                } from '../controllers/users.controller.js';
 
 
 const router = Router();
+
+// Login
+router.post('/users/login', login);
 
 // Obtener todos los usuarios
 router.get('/users', getUsers);
