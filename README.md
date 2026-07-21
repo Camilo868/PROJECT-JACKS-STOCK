@@ -1,151 +1,183 @@
-# 📦 JACKS STOCKS
+# Jacks Stocks
 
-> Inventory management system with automatic **EOQ** (Economic Order Quantity), **ABC classification**, and **Reorder Point (ROP)** calculation — built as the capstone project for **CodeUp RIWI: Beyond Limits**.
+Sistema de gestión de inventario para pymes. Administra productos, proveedores, bodegas, compras y movimientos de stock, y calcula automáticamente EOQ (cantidad económica de pedido), clasificación ABC y punto de reorden (ROP) para decidir qué comprar y cuándo.
 
-![Node.js](https://img.shields.io/badge/Node.js-LTS-339933?logo=node.js&logoColor=white)
-![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-4169E1?logo=postgresql&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)
-![License](https://img.shields.io/badge/license-ISC-lightgrey)
-
-<!-- Project logo / banner -->
-<!-- ![Jacks Stocks](./docs/logo.png) -->
-
----
-
-## 📖 About this project
-
-**Jacks Stocks** helps small and medium businesses manage products, suppliers, warehouses, purchases, and stock movements — and automatically calculates:
-
-- **EOQ** — how much to order in each purchase to minimize total cost.
-- **ROP** — the exact stock level at which a new order should be placed.
-- **ABC classification** — which products deserve the most attention, based on the Pareto rule applied to annual consumption value.
-- **Criticality semaphore** — a red/yellow/green view of what needs to be bought right now.
-
-This is a **capstone (Proyecto Integrador) project for CodeUp RIWI: Beyond Limits**, built collaboratively: one team member owns the backend, another owns the frontend, sharing one PostgreSQL database.
-
----
-
-## 🗂️ Repositories
-
-This project is split into two repositories that talk to each other over HTTP:
-
-| Repository | Responsibility | README |
-|---|---|---|
-| `PROJECT-JACKS-STOCK-BACKEND` | Express.js REST API + PostgreSQL (Supabase) | [Backend README](../PROJECT-JACKS-STOCK-BACKEND/README.md) |
-| `riwi-frontend` | HTML + CSS + Vanilla JavaScript SPA | [Frontend README](../riwi-frontend/README.md) |
-
-Both READMEs go deeper into their own setup; this document is the entry point that explains how everything fits together.
-
----
-
-## ✨ Key features
-
-- Full CRUD for products, categories, suppliers, warehouses, inventory, movements, purchases, and purchase details.
-- Authentication with **bcrypt** password hashing and **JWT** session tokens.
-- Stock tracked **per warehouse** (a product can exist in several warehouses at once).
-- **Available warehouse space**, calculated in SQL and displayed live.
-- Purchase orders with status tracking (`pending` / `received` / `cancelled`) — marking an order as received automatically logs the matching stock entries.
-- **Reports**: ABC distribution, semaphore breakdown, top products by consumption value, and a SQL-calculated EOQ/ROP report.
-- Standardized API responses (`{ success, message, data }`) across every endpoint.
-
----
-
-## 🏗️ Architecture
+Repositorio único con dos carpetas independientes que se comunican por HTTP:
 
 ```
-┌─────────────────────┐        HTTP (fetch)        ┌──────────────────────┐        SQL        ┌──────────────┐
-│   riwi-frontend      │ ─────────────────────────▶ │  Backend (Express)    │ ─────────────────▶ │  PostgreSQL   │
-│   Vanilla JS SPA      │ ◀───────────────────────── │  Controllers + Routes  │ ◀───────────────── │  (Supabase)    │
-└─────────────────────┘     { success, data }       └──────────────────────┘                    └──────────────┘
+PROJECT-JACKS-STOCK/
+├── PROJECT-JACKS-STOCK-BACKEND/   API REST (Express + PostgreSQL)
+└── riwi-frontend/                  SPA (HTML + CSS + JavaScript vanilla)
 ```
 
-- The **frontend** has no data logic of its own beyond formatting: every service (`src/js/services/*.js`) translates between the screens and the exact shape of the real database.
-- The **backend** follows a simplified MVC pattern: one route file + one controller per resource, all returning the same response envelope.
-- Business calculations (EOQ, ROP, ABC) live in `riwi-frontend/src/js/utils/inventory-calc.js`; equivalent SQL-only versions are exposed for reporting via `/reports/*`.
+Proyecto Integrador de CodeUp RIWI.
 
----
+## Qué problema resuelve
 
-## 🛠️ Tech stack
+Sin un sistema como este, decidir cuánto y cuándo comprar de cada producto se hace a ojo. Jacks Stocks toma los datos de demanda, costos y tiempos de entrega ya cargados en el sistema y calcula:
 
-| Layer | Technology |
+- **EOQ**: cuánto pedir en cada orden para minimizar el costo total (de ordenar + de almacenar).
+- **ROP**: en qué nivel de stock hay que volver a pedir, según la demanda diaria y el lead time del proveedor.
+- **Clasificación ABC**: qué productos concentran la mayor parte del valor de consumo anual (regla de Pareto), para priorizar la atención sobre esos.
+- **Semáforo de compra**: una vista roja/amarilla/verde de qué se necesita comprar ya mismo.
+
+## Arquitectura general
+
+```
+┌─────────────────────┐                              ┌──────────────────────┐                ┌──────────────┐
+│  riwi-frontend        │                              │  PROJECT-JACKS-       │                │  PostgreSQL   │
+│  (SPA, sin build)      │ ───── fetch() + JWT ───────▶ │  STOCK-BACKEND          │ ── pg.Pool ──▶ │  (Supabase)    │
+│  hash router (#/ruta)   │ ◀──── { success, data } ──── │  Express + routers/       │                │                │
+└─────────────────────┘                              │  controllers por recurso   │                └──────────────┘
+                                                       └──────────────────────┘
+```
+
+El frontend no tiene lógica propia de persistencia: cada acción (crear un producto, registrar un movimiento, marcar una compra como recibida) termina en una llamada `fetch` contra el backend. El backend no tiene vistas ni renderiza HTML: solo responde JSON.
+
+## Tecnologías utilizadas
+
+| Área | Tecnología |
 |---|---|
-| Frontend | HTML5, CSS3, Bootstrap 5, Vanilla JavaScript (ES Modules), hash-based SPA router |
-| Backend | Node.js, Express 5, `bcrypt`, `jsonwebtoken`, `cors`, `morgan` |
-| Database | PostgreSQL (Supabase) |
+| Backend | Node.js, Express 5, `pg` (PostgreSQL), `bcrypt`, `jsonwebtoken`, `cors`, `morgan` |
+| Frontend | HTML5, CSS3, JavaScript (ES Modules), Bootstrap 5 y Bootstrap Icons (vía CDN) |
+| Base de datos | PostgreSQL (Supabase) |
 
----
+El frontend no usa ningún framework (React, Vue, Angular) ni bundler (Webpack, Vite): son archivos `.js` con `import`/`export` nativos, cargados directo por el navegador.
 
-## 🚀 Running the full project locally
+## Funcionalidades principales
 
-### 1. Database
+- CRUD de productos, categorías, proveedores, bodegas, inventario, movimientos y compras (con su detalle).
+- Login y registro con contraseña hasheada (`bcrypt`) y token de sesión (`jsonwebtoken`).
+- Stock llevado por bodega (un mismo producto puede tener existencias en varias bodegas a la vez), no un total único por producto.
+- Espacio disponible por bodega, calculado en SQL (`GET /warehouses/capacity`).
+- Órdenes de compra con estado (`pending` / `received` / `cancelled`); marcar una como recibida genera automáticamente los movimientos de entrada correspondientes.
+- Reportes: distribución ABC, semáforo de criticidad, top de productos por valor de consumo, y un reporte de EOQ/ROP calculado enteramente en SQL.
 
-1. Run `BDT + queries.sql` against your Supabase project — creates the tables and sample data.
-2. Run `migrations.sql` (in the backend repo) — adds the `status` column to `purchases`, the `note` column to `movements`, and the cascade-delete rules that let deletes work properly.
+## Flujo general del sistema
 
-### 2. Backend
+```
+Usuario abre la app
+      |
+      v
+¿hay sesión guardada en localStorage? --no--> pantalla de Login/Registro
+      |                                              |
+     sí                                    POST /users/login o /users/register
+      |                                              |
+      v                                              v
+Dashboard (privado)                    guarda { token, user } en localStorage
+      |
+      v
+Cada pantalla pide sus datos a un *.service.js
+      |
+      v
+El service llama a api.js, que hace fetch() con el token en el header Authorization
+      |
+      v
+El backend responde { success, message, data }
+      |
+      v
+La pantalla vuelve a dibujar su contenido con los datos recibidos
+```
+
+## Requisitos
+
+- Node.js (versión con soporte para `--env-file`, usada en los scripts del backend).
+- Una base de datos PostgreSQL accesible (el proyecto está armado contra Supabase).
+- Un servidor de archivos estáticos para el frontend (no corre directo desde `file://`).
+
+## Instalación
+
+```bash
+git clone <url-del-repositorio>
+cd PROJECT-JACKS-STOCK
+```
+
+### Backend
 
 ```bash
 cd PROJECT-JACKS-STOCK-BACKEND
 npm install
-# create config/.env with your DB credentials, PORT, and JWT_SECRET
-npm run dev
 ```
 
-Runs on `http://localhost:6543` by default.
+Crear `config/.env` con:
 
-### 3. Frontend
+```env
+DB_USER=
+DB_HOST=
+DB_PASSWORD=
+DB_DATABASE=
+DB_PORT=
+PORT=6543
+JWT_SECRET=
+```
+
+`PORT` y `JWT_SECRET` son opcionales — si faltan, el backend usa `6543` y un secreto de desarrollo (`dev-secret-change-me`) respectivamente, que no debería usarse fuera de desarrollo local.
+
+### Frontend
+
+No requiere instalación: es HTML/CSS/JS estático. Solo hay que confirmar que `riwi-frontend/src/js/services/api.js` apunte al backend:
+
+```js
+export const API_CONFIG = {
+  BASE_URL: 'http://localhost:6543',
+};
+```
+
+## Ejecución
 
 ```bash
+# Terminal 1 — backend
+cd PROJECT-JACKS-STOCK-BACKEND
+npm run dev
+
+# Terminal 2 — frontend
 cd riwi-frontend
 npx serve .
-# or the VS Code "Live Server" extension
 ```
 
-Confirm `BASE_URL` in `src/js/services/api.js` points to the backend's URL, then open the app and **register a new account** — the sample SQL users have placeholder passwords and can't log in until you create your own account.
+El backend queda escuchando en el puerto configurado (por defecto `6543`) y loguea `✅ Conectado a Supabase` si la conexión a la base de datos funcionó. El frontend queda disponible en el puerto que asigne el servidor estático (por ejemplo `http://localhost:3000` con `serve`).
 
----
+La primera vez, hay que crear una cuenta desde la pantalla de Registro — los usuarios de ejemplo que trae el script SQL tienen una contraseña de relleno, no un hash real, así que no van a poder iniciar sesión.
 
-## 🔌 API overview
+## Estructura de carpetas
 
-Full endpoint table lives in the [backend README](../PROJECT-JACKS-STOCK-BACKEND/README.md#-available-endpoints). Quick summary:
+```
+PROJECT-JACKS-STOCK-BACKEND/
+  config/          credenciales y conexión a PostgreSQL
+  migrations.sql   cambios pendientes sobre el esquema original
+  src/
+    controllers/   lógica de cada endpoint (una consulta SQL por función)
+    routes/        definición de rutas por recurso
+    services/      (solo un archivo, sin uso actual)
+    utils/         helpers de respuesta estándar y de JWT
+    server.js      arranque del servidor Express
 
-| Resource | Base path |
-|---|---|
-| Auth | `/users/login`, `/users/register` |
-| Products | `/products` |
-| Categories | `/categories` |
-| Suppliers | `/suppliers` |
-| Warehouses | `/warehouses`, `/warehouses/capacity` |
-| Inventory | `/inventory` |
-| Movements | `/movements` |
-| Purchases | `/purchases`, `/purchases/:id/status` |
-| Purchase details | `/purchase-details` |
-| Reports | `/reports/eoq`, `/reports/movements-summary`, `/reports/stock-by-product` |
+riwi-frontend/
+  index.html
+  src/
+    assets/        CSS e imágenes
+    js/
+      core/        router propio y manejo de sesión
+      components/  piezas de UI reutilizables (modal, sidebar, toasts, badges...)
+      services/    un archivo por recurso, hablan con el backend vía api.js
+      utils/       cálculos de EOQ/ROP/ABC, validadores de formularios, formateo
+      pages/       una función render*Page() por pantalla
+      main.js      registra las rutas y arranca la app
+```
 
----
+## Relación entre Frontend y Backend
 
-## 📐 Business logic
+El frontend no asume ninguna estructura de base de datos: cada `*.service.js` traduce entre la forma que usan las pantallas y la forma exacta de las tablas del backend (por ejemplo, el backend guarda `category_id` como número y el frontend resuelve el nombre de la categoría combinando `/products` con `/categories`). Si el backend cambia el nombre de una columna o de un endpoint, el único lugar que hay que tocar del lado del frontend es el service correspondiente — las páginas no le hablan a la API directamente.
 
-- **EOQ** = √(2·D·S / H) — D = annual demand, S = ordering cost, H = holding cost per unit/year (set directly by the admin, no percentage math involved).
-- **ROP** = daily demand × supplier lead time (set per product) + safety stock.
-- **ABC classification** — Pareto rule on annual consumption value: A = top 80% of value, B = next 15%, C = remaining 5%.
-- **Semaphore** — red (stock ≤ 60% of ROP or empty), yellow (stock ≤ ROP), green (healthy).
+La autenticación es la única pieza compartida de punta a punta: el backend firma un JWT en login/registro, el frontend lo guarda en `localStorage` y lo reenvía en cada request. El backend, sin embargo, no valida ese token en ningún endpoint todavía (ver el README del backend) — cualquier ruta puede llamarse sin sesión.
 
----
+## Posibles mejoras futuras
 
-## 🗺️ Roadmap (out of MVP scope)
+- Middleware de autenticación real en el backend (el token se emite pero no se verifica en las rutas protegidas).
+- Exportar reportes a PDF/Excel.
+- Sugerencia automática de orden de compra a partir del ROP.
+- Permisos diferenciados por rol (administrador vs. encargado de bodega).
 
-- Export reports to PDF/Excel
-- Automatic purchase order suggestions based on ROP
-- Role-based permissions (admin vs. warehouse staff)
+## Autores
 
----
-
-## 👥 Team & credits
-
-Capstone project (Proyecto Integrador) — **CodeUp RIWI: Beyond Limits**, 2026.
-
-## 📄 License
-
-ISC.
+Proyecto Integrador — CodeUp RIWI.
